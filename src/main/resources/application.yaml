@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: magme
+  datasource:
+    url: jdbc:h2:mem:mtgdb
+    driver-class-name: org.h2.Driver
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create-drop
+app:
+  card-images-path: /home/jg/Documents/code/mine/magme-res/images
