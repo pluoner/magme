@@ -2,7 +2,7 @@ spring:
   application:
     name: magme
   datasource:
-    url: jdbc:h2:mem:mtgdb
+    url: jdbc:h2:file:./data/MagMeDB
     driver-class-name: org.h2.Driver
   jpa:
     show-sql: true
