@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class MagmeApplication {
 
     public static void main(String[] args) {
+        nu.pattern.OpenCV.loadLocally();
         SpringApplication.run(MagmeApplication.class, args);
     }
 

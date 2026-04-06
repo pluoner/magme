@@ -11,4 +11,4 @@ spring:
     hibernate:
       ddl-auto: create-drop
 app:
-  card-images-path: /home/jg/Documents/code/mine/magme-res/images
+  card-images-path: /home/jg/Documents/code/mine/magme-res

@@ -39,4 +39,11 @@ public class CardController {
     ) {
         return cardService.getCardJpg(scryfallID);
     }
+
+    @GetMapping("/getmaskedctccard")
+    public ResponseEntity<byte[]> getMaskedCTCCard(
+            @RequestParam() String scryfallID
+    ) {
+        return cardService.getMaskedCTCCard(scryfallID);
+    }
 }
