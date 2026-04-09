@@ -1,8 +1,11 @@
 package se.jg.magme.service;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -23,11 +26,11 @@ public class ScryfallService {
                 .build();
     }
 
-    public String getBulkData() {
+    public BulkData getBulkData() {
         return restClient.get()
                 .uri("https://api.scryfall.com/bulk-data/oracle-cards")
                 .retrieve()
-                .body(String.class);
+                .body(BulkData.class);
     }
 
     public List<Card> getAllOracleCards(URI downloadUri) {
@@ -36,4 +39,10 @@ public class ScryfallService {
                 .retrieve()
                 .body(typeRef);
     }
+    @JsonIgnoreProperties
+    record BulkData(
+            @JsonProperty("updated_at") OffsetDateTime updatedAt,
+            @JsonProperty("download_uri") URI downloadUri) {
+    }
+
 }

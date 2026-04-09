@@ -26,23 +26,13 @@ public class PopulateCardDBService {
     }
 
     public boolean populateCardDB(boolean force) {
-        BulkData bulkData = scryfallService.getBulkData();
-        URI downloadUri = parseDownloadUri(bulkDataJson);
-        List<Card> cards = scryfallService.getAllOracleCards(downloadUri);
+        ScryfallService.BulkData bulkData = scryfallService.getBulkData();
+        List<Card> cards = scryfallService.getAllOracleCards(bulkData.downloadUri());
         cardRepository.saveAll(cards);
+        return true;
     }
     private URI parseDownloadUri(String bulkDataJson) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'parseDownloadUri'");
-    }
-
-    public BulkData getBulkData() {
-        return scryfallService.getBulkData();
-    }
-
-    @JsonIgnoreProperties
-    record BulkData(
-        @JsonProperty("updated_at") OffsetDateTime updatedAt,
-        @JsonProperty("download_uri") URI downloadUri) {
     }
 }
