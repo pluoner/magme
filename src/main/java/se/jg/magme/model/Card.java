@@ -9,7 +9,7 @@ import lombok.Setter;
 public class Card {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     @Column(name = "scryfall_id")
     private String scryfallID;

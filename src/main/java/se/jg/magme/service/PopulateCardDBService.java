@@ -24,11 +24,11 @@ public class PopulateCardDBService {
     }
 
     public boolean populateCardDB(PopulateStrategy strategy) {
-        if (strategy == PopulateStrategy.SKIP_IF_EXISTS && scryfallSyncStateRep.get().orElseThrow().getOracleCardsUpdatedAt() != null) {
+        ScryfallSyncState scryfallSyncState = scryfallSyncStateRep.get().orElse(new ScryfallSyncState());
+        if (strategy == PopulateStrategy.SKIP_IF_EXISTS && scryfallSyncState.getOracleCardsUpdatedAt() != null) {
             return false;
         }
         ScryfallService.BulkData bulkData = scryfallService.getBulkData();
-        ScryfallSyncState scryfallSyncState = scryfallSyncStateRep.get().orElseThrow();
         if (strategy == PopulateStrategy.CHECK_AND_POPULATE) {
             OffsetDateTime lastUpdated = scryfallSyncState.getOracleUpdatedAt();
             if (lastUpdated != null && !bulkData.updatedAt().isAfter(lastUpdated)) {
