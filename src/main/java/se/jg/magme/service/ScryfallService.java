@@ -6,6 +6,9 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Getter;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -40,7 +43,7 @@ public class ScryfallService {
                 .body(typeRef);
     }
     @JsonIgnoreProperties
-    record BulkData(
+    public record BulkData(
             @JsonProperty("updated_at") OffsetDateTime updatedAt,
             @JsonProperty("download_uri") URI downloadUri) {
     }

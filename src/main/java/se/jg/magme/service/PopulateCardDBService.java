@@ -1,38 +1,49 @@
 package se.jg.magme.service;
 
-import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import se.jg.magme.model.Card;
+import se.jg.magme.model.ScryfallSyncState;
 import se.jg.magme.repository.CardRepository;
 import se.jg.magme.repository.ScryfallSyncStateRepository;
 
 @Service
 public class PopulateCardDBService {
 
-    private final CardRepository cardRepository;
+    private final CardRepository cardRep;
     private final ScryfallService scryfallService;
-    private final ScryfallSyncStateRepository scryfallSyncStateRepository;
-    public PopulateCardDBService(CardRepository cardRepository, ScryfallService scryfallService, ScryfallSyncStateRepository scryfallSyncStateRepository) {
-        this.cardRepository = cardRepository;
+    private final ScryfallSyncStateRepository scryfallSyncStateRep;
+    public PopulateCardDBService(CardRepository cardRep, ScryfallService scryfallService, ScryfallSyncStateRepository scryfallSyncStateRep) {
+        this.cardRep = cardRep;
         this.scryfallService = scryfallService;
-        this.scryfallSyncStateRepository = scryfallSyncStateRepository;
+        this.scryfallSyncStateRep = scryfallSyncStateRep;
     }
 
-    public boolean populateCardDB(boolean force) {
+    public boolean populateCardDB(PopulateStrategy strategy) {
+        if (strategy == PopulateStrategy.SKIP_IF_EXISTS && scryfallSyncStateRep.get().orElseThrow().getOracleCardsUpdatedAt() != null) {
+            return false;
+        }
         ScryfallService.BulkData bulkData = scryfallService.getBulkData();
+        ScryfallSyncState scryfallSyncState = scryfallSyncStateRep.get().orElseThrow();
+        if (strategy == PopulateStrategy.CHECK_AND_POPULATE) {
+            OffsetDateTime lastUpdated = scryfallSyncState.getOracleUpdatedAt();
+            if (lastUpdated != null && !bulkData.updatedAt().isAfter(lastUpdated)) {
+                return false;
+            }
+        }
         List<Card> cards = scryfallService.getAllOracleCards(bulkData.downloadUri());
-        cardRepository.saveAll(cards);
+        cardRep.saveAll(cards);
+        scryfallSyncState.setOracleUpdatedAt(bulkData.updatedAt());
+        scryfallSyncState.setOracleCardsUpdatedAt(OffsetDateTime.now());
+        scryfallSyncStateRep.save(scryfallSyncState);
         return true;
     }
-    private URI parseDownloadUri(String bulkDataJson) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'parseDownloadUri'");
-    }
+}
+
+enum PopulateStrategy {
+    FORCE, CHECK_AND_POPULATE, SKIP_IF_EXISTS
 }
