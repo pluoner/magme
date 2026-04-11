@@ -67,9 +67,9 @@ public class CardService {
     }
 
     public ResponseEntity<byte[]> getCardJpg(String scryfallID) {
-        Card c = cardRepository.getCardByScryfallID(scryfallID)
+        Card c = cardRepository.getCardByOracleID(scryfallID)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card not found"));
-        Path jpgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getScryfallID() + ".jpg");
+        Path jpgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getOracleID() + ".jpg");
         byte[] responseBody;
         try{
             responseBody = Files.readAllBytes(jpgPath);
@@ -80,9 +80,9 @@ public class CardService {
     }
 
     public ResponseEntity<byte[]> getMaskedCTCCard(String scryfallID) {
-        Card c = cardRepository.getCardByScryfallID(scryfallID)
+        Card c = cardRepository.getCardByOracleID(scryfallID)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card not found"));
-        Path noctcPath = Path.of(cardImagesPath, "noctc", c.getSetCode(), c.getScryfallID() + ".jpg");
+        Path noctcPath = Path.of(cardImagesPath, "noctc", c.getSetCode(), c.getOracleID() + ".jpg");
         if (!Files.exists(noctcPath)) {
             createNoCtcJpg(c);
         }
@@ -96,7 +96,7 @@ public class CardService {
     }
 
     private void createNoCtcJpg(Card c) {
-        Path orgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getScryfallID() + ".jpg");
+        Path orgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getOracleID() + ".jpg");
         Mat orgImg = Imgcodecs.imread(orgPath.toString());
         if (orgImg.empty()) {
             logger.log(Level.SEVERE, "Image not found", new Throwable());
@@ -116,7 +116,7 @@ public class CardService {
                 40
         );
         if (circles.empty()) {
-            logger.log(Level.INFO, "No mana circles found in Img, scryfallID:" + c.getScryfallID(), new Throwable());
+            logger.log(Level.INFO, "No mana circles found in Img, scryfallID:" + c.getOracleID(), new Throwable());
             return;
         }
         double[] leftMostCircle = null; // center x, center y, radius
@@ -151,7 +151,7 @@ public class CardService {
             // draw the center point
             Imgproc.circle(result, center, 2, new Scalar(0, 0, 255), -1);
         }
-        Path noCtcPath = Path.of(cardImagesPath, "noctc", c.getSetCode(), c.getScryfallID() + ".jpg");
+        Path noCtcPath = Path.of(cardImagesPath, "noctc", c.getSetCode(), c.getOracleID() + ".jpg");
         Imgcodecs.imwrite(noCtcPath.toString(), result);
 /*        int extendedRadius = (int)(leftMostCircle[2]*1.1);
         double curXStart = leftMostCircle[0]-extendedRadius*2;

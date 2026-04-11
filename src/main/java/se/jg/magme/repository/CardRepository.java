@@ -8,7 +8,5 @@ import java.util.Optional;
 
 public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificationExecutor<Card> {
 
-    Optional<Card> findByScryfallID(String scryfallID);
-
-    Optional<Card> getCardByScryfallID(String scryfallID);
+    Optional<Card> getCardByOracleID(String scryfallID);
 }
