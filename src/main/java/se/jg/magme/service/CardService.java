@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import se.jg.magme.model.Card;
 import se.jg.magme.repository.CardRepository;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -100,9 +103,14 @@ public class CardService {
         }
     }
 
-    public ResponseEntity<byte[]> getMaskedCTCCard(UUID id) {
-        Card c = cardRepository.getCardById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card not found"));
+    public ResponseEntity<byte[]> getNoCTCCard(UUID id) {
+        Card c;
+        if (id == null) {
+            c = getRandomCard(null, null, null);
+        } else {
+            c = cardRepository.getCardById(id)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card not found"));
+        }
         Path noctcPath = Path.of(cardImagesPath, "noctc", c.getSetCode(), c.getId() + ".jpg");
         if (!Files.exists(noctcPath)) {
             createNoCtcJpg(c);
@@ -118,7 +126,17 @@ public class CardService {
 
     private void createNoCtcJpg(Card c) {
         Path orgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getId() + ".jpg");
-        Mat orgImg = Imgcodecs.imread(orgPath.toString());
+        Mat orgImg;
+        try {
+            orgImg = readImage(orgPath);
+            if (orgImg.empty()) {
+                downloadCardImg(c);
+                orgImg = readImage(orgPath);
+            }
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to read image", e);
+            return;
+        }
         if (orgImg.empty()) {
             logger.log(Level.SEVERE, "Image not found", new Throwable());
             return;
@@ -194,6 +212,14 @@ public class CardService {
         Imgproc.resize(copyArea, pasteArea, pasteArea.size(), 0, 0, Imgproc.INTER_LINEAR);
         Path noCtcPath = Path.of(cardImagesPath, "noctc", c.getSetCode(), c.getScryfallID() + ".jpg");
         Imgcodecs.imwrite(noCtcPath.toString(), result);*/
+    }
+
+    private Mat readImage(Path path) throws IOException {
+        BufferedImage img = ImageIO.read(path.toFile());
+        Mat mat = new Mat(img.getHeight(), img.getWidth(), CvType.CV_8UC3);
+        byte[] pixels = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
+        mat.put(0, 0, pixels);
+        return mat;
     }
 }
 

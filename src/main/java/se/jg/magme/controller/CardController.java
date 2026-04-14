@@ -47,10 +47,10 @@ public class CardController {
         return cardService.getRandomCardJpg();
     }
 
-    @GetMapping("/getmaskedctccard")
-    public ResponseEntity<byte[]> getMaskedCTCCard(
-            @RequestParam() UUID id
+    @GetMapping("/getnoctccard")
+    public ResponseEntity<byte[]> getNoCTCCard(
+            @RequestParam(required = false) UUID id
     ) {
-        return cardService.getMaskedCTCCard(id);
+        return cardService.getNoCTCCard(id);
     }
 }
