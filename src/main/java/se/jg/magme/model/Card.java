@@ -49,7 +49,7 @@ public class Card implements Persistable<UUID> {
     @Convert(converter = StringListConverter.class)
     @JsonProperty("color_identity")
     private List<String> colorIdentity;
-    @JsonProperty("set_code")
+    @JsonProperty("set")
     private String setCode;
     @JsonProperty("set_name")
     private String setName;

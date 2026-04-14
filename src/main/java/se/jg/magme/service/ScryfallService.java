@@ -1,14 +1,17 @@
 package se.jg.magme.service;
 
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -22,7 +25,11 @@ public class ScryfallService {
     };
 
     public ScryfallService(RestClient.Builder builder) {
+        HttpClient httpClient = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
         this.restClient = builder
+                .requestFactory(new JdkClientHttpRequestFactory(httpClient))
                 .defaultHeader("Accept", "application/json")
                 .defaultHeader("User-Agent", "Magme/1.0 (contact: jonathan.gerholm@pm.me)")
                 .build();
@@ -42,7 +49,7 @@ public class ScryfallService {
                 .body(typeRef);
     }
 
-    public byte[] getCardImage(String scryfallID) {
+    public byte[] getCardImage(UUID id) {
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .scheme("https")
@@ -50,7 +57,7 @@ public class ScryfallService {
                         .path("/cards/{id}")
                         .queryParam("format", "image")
                         .queryParam("version", "normal")
-                        .build(scryfallID))
+                        .build(id))
                 .retrieve()
                 .body(byte[].class);
     }

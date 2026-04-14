@@ -9,5 +9,5 @@ import java.util.UUID;
 
 public interface CardRepository extends JpaRepository<Card, UUID>, JpaSpecificationExecutor<Card> {
 
-    Optional<Card> getCardByOracleID(String scryfallID);
+    Optional<Card> getCardById(UUID id);
 }

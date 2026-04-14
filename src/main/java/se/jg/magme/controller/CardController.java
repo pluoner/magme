@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import se.jg.magme.model.Card;
 import se.jg.magme.service.CardService;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/cards")
@@ -35,15 +36,21 @@ public class CardController {
 
     @GetMapping("/getcardpic")
     public ResponseEntity<byte[]> getCard(
-            @RequestParam() String scryfallID
+            @RequestParam() UUID id
     ) {
-        return cardService.getCardJpg(scryfallID);
+        return cardService.getCardJpg(id);
+    }
+
+    @GetMapping("/getrandomcardpic")
+    public ResponseEntity<byte[]> getRandomCard(
+    ) {
+        return cardService.getRandomCardJpg();
     }
 
     @GetMapping("/getmaskedctccard")
     public ResponseEntity<byte[]> getMaskedCTCCard(
-            @RequestParam() String scryfallID
+            @RequestParam() UUID id
     ) {
-        return cardService.getMaskedCTCCard(scryfallID);
+        return cardService.getMaskedCTCCard(id);
     }
 }

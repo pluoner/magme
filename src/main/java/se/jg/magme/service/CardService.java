@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,9 +29,11 @@ public class CardService {
     private String cardImagesPath;
 
     private final CardRepository cardRepository;
+    private final ScryfallService scryfallService;
     private static final Logger logger = Logger.getLogger(CardService.class.getName());
-    public CardService(CardRepository cardRepository) {
+    public CardService(CardRepository cardRepository, ScryfallService scryfallService) {
         this.cardRepository = cardRepository;
+        this.scryfallService = scryfallService;
     }
 
     public List<Card> getAllCards() {
@@ -66,10 +69,17 @@ public class CardService {
         return res.get(rand.nextInt(res.size()));
     }
 
-    public ResponseEntity<byte[]> getCardJpg(String scryfallID) {
-        Card c = cardRepository.getCardByOracleID(scryfallID)
+    public ResponseEntity<byte[]> getRandomCardJpg() {
+        Card c = getRandomCard(null, null, null);
+        return getCardJpg(c.getId());
+    }
+    public ResponseEntity<byte[]> getCardJpg(UUID id) {
+        Card c = cardRepository.getCardById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card not found"));
-        Path jpgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getOracleID() + ".jpg");
+        Path jpgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getId() + ".jpg");
+        if (!Files.exists(jpgPath)) {
+            downloadCardImg(c);
+        }
         byte[] responseBody;
         try{
             responseBody = Files.readAllBytes(jpgPath);
@@ -79,10 +89,22 @@ public class CardService {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(responseBody);
     }
 
-    public ResponseEntity<byte[]> getMaskedCTCCard(String scryfallID) {
-        Card c = cardRepository.getCardByOracleID(scryfallID)
+    private void downloadCardImg(Card c) {
+        byte[] imgBytes = scryfallService.getCardImage(c.getId());
+        Path jpgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getId() + ".jpg");
+        logger.log(Level.INFO, "JGJGJGJG:" + jpgPath.toString() + "-" + c.getSetCode() + "-" + c.getId());
+        try {
+            Files.createDirectories(jpgPath.getParent());
+            Files.write(jpgPath, imgBytes);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to save card image", new Throwable());
+        }
+    }
+
+    public ResponseEntity<byte[]> getMaskedCTCCard(UUID id) {
+        Card c = cardRepository.getCardById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card not found"));
-        Path noctcPath = Path.of(cardImagesPath, "noctc", c.getSetCode(), c.getOracleID() + ".jpg");
+        Path noctcPath = Path.of(cardImagesPath, "noctc", c.getSetCode(), c.getId() + ".jpg");
         if (!Files.exists(noctcPath)) {
             createNoCtcJpg(c);
         }
@@ -96,7 +118,7 @@ public class CardService {
     }
 
     private void createNoCtcJpg(Card c) {
-        Path orgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getOracleID() + ".jpg");
+        Path orgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getId() + ".jpg");
         Mat orgImg = Imgcodecs.imread(orgPath.toString());
         if (orgImg.empty()) {
             logger.log(Level.SEVERE, "Image not found", new Throwable());
@@ -151,7 +173,7 @@ public class CardService {
             // draw the center point
             Imgproc.circle(result, center, 2, new Scalar(0, 0, 255), -1);
         }
-        Path noCtcPath = Path.of(cardImagesPath, "noctc", c.getSetCode(), c.getOracleID() + ".jpg");
+        Path noCtcPath = Path.of(cardImagesPath, "noctc", c.getSetCode(), c.getId() + ".jpg");
         Imgcodecs.imwrite(noCtcPath.toString(), result);
 /*        int extendedRadius = (int)(leftMostCircle[2]*1.1);
         double curXStart = leftMostCircle[0]-extendedRadius*2;
