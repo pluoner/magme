@@ -5,8 +5,9 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import se.jg.magme.model.Card;
 
 import java.util.Optional;
+import java.util.UUID;
 
-public interface CardRepository extends JpaRepository<Card, Long>, JpaSpecificationExecutor<Card> {
+public interface CardRepository extends JpaRepository<Card, UUID>, JpaSpecificationExecutor<Card> {
 
     Optional<Card> getCardByOracleID(String scryfallID);
 }

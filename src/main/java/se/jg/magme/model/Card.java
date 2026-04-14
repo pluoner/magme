@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.domain.Persistable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,10 +13,23 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity @Getter @Setter @NoArgsConstructor
-public class Card {
+public class Card implements Persistable<UUID> {
 
     @Id
     private UUID id;
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        this.isNew = false;
+    }
     @Column(name = "oracle_id")
     @JsonProperty("oracle_id")
     private String oracleID;
