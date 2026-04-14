@@ -8,14 +8,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PopulateCardDBService implements CommandLineRunner {
+public class CardDBUpdateServiceRunner implements CommandLineRunner {
 
-    private static final Logger logger = Logger.getLogger(PopulateCardDBService.class.getName());
-    private final CardPopulationService cardPopulationService;
+    private static final Logger logger = Logger.getLogger(CardDBUpdateServiceRunner.class.getName());
+    private final CardDBUpdateService cardPopulationService;
     @Value("${app.startup-target}")
     private String startupTarget;
 
-    public PopulateCardDBService(CardPopulationService cardPopulationService) {
+    public CardDBUpdateServiceRunner(CardDBUpdateService cardPopulationService) {
         this.cardPopulationService = cardPopulationService;
     }
 

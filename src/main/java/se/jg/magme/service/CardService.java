@@ -29,9 +29,9 @@ public class CardService {
     private String cardImagesPath;
 
     private final CardRepository cardRepository;
-    private final ScryfallService scryfallService;
+    private final ScryfallClient scryfallService;
     private static final Logger logger = Logger.getLogger(CardService.class.getName());
-    public CardService(CardRepository cardRepository, ScryfallService scryfallService) {
+    public CardService(CardRepository cardRepository, ScryfallClient scryfallService) {
         this.cardRepository = cardRepository;
         this.scryfallService = scryfallService;
     }
@@ -92,7 +92,6 @@ public class CardService {
     private void downloadCardImg(Card c) {
         byte[] imgBytes = scryfallService.getCardImage(c.getId());
         Path jpgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getId() + ".jpg");
-        logger.log(Level.INFO, "JGJGJGJG:" + jpgPath.toString() + "-" + c.getSetCode() + "-" + c.getId());
         try {
             Files.createDirectories(jpgPath.getParent());
             Files.write(jpgPath, imgBytes);

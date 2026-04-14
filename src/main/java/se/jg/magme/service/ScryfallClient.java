@@ -18,13 +18,13 @@ import org.springframework.web.client.RestClient;
 import se.jg.magme.model.Card;
 
 @Service
-public class ScryfallService {
+public class ScryfallClient {
 
     private final RestClient restClient;
     private final ParameterizedTypeReference<List<Card>> typeRef = new ParameterizedTypeReference<List<Card>>() {
     };
 
-    public ScryfallService(RestClient.Builder builder) {
+    public ScryfallClient(RestClient.Builder builder) {
         HttpClient httpClient = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();

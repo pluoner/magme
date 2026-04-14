@@ -14,27 +14,27 @@ import se.jg.magme.repository.CardRepository;
 import se.jg.magme.repository.ScryfallSyncStateRepository;
 
 @Service
-public class CardPopulationService {
+@Transactional
+public class CardDBUpdateService {
 
-    private static final Logger logger = Logger.getLogger(CardPopulationService.class.getName());
+    private static final Logger logger = Logger.getLogger(CardDBUpdateService.class.getName());
     private final CardRepository cardRep;
-    private final ScryfallService scryfallService;
+    private final ScryfallClient scryfallService;
     private final ScryfallSyncStateRepository scryfallSyncStateRep;
 
-    public CardPopulationService(CardRepository cardRep, ScryfallService scryfallService, ScryfallSyncStateRepository scryfallSyncStateRep) {
+    public CardDBUpdateService(CardRepository cardRep, ScryfallClient scryfallService, ScryfallSyncStateRepository scryfallSyncStateRep) {
         this.cardRep = cardRep;
         this.scryfallService = scryfallService;
         this.scryfallSyncStateRep = scryfallSyncStateRep;
     }
 
-    @Transactional
     public boolean populateCardDB(PopulateStrategy strategy) {
         ScryfallSyncState scryfallSyncState = scryfallSyncStateRep.get().orElse(new ScryfallSyncState());
         if (strategy == PopulateStrategy.SKIP_IF_EXISTS && scryfallSyncState.getOracleCardsUpdatedAt() != null) {
             logger.log(Level.INFO, "Cards already exist, skipping population");
             return false;
         }
-        ScryfallService.BulkData bulkData = scryfallService.getBulkData();
+        ScryfallClient.BulkData bulkData = scryfallService.getBulkData();
         if (strategy == PopulateStrategy.CHECK_AND_POPULATE) {
             OffsetDateTime lastUpdated = scryfallSyncState.getOracleUpdatedAt();
             if (lastUpdated != null && !bulkData.updatedAt().isAfter(lastUpdated)) {
