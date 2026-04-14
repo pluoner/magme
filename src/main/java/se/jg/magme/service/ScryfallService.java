@@ -41,6 +41,19 @@ public class ScryfallService {
                 .retrieve()
                 .body(typeRef);
     }
+
+    public byte[] getCardImage(String scryfallID) {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .scheme("https")
+                        .host("api.scryfall.com")
+                        .path("/cards/{id}")
+                        .queryParam("format", "image")
+                        .queryParam("version", "normal")
+                        .build(scryfallID))
+                .retrieve()
+                .body(byte[].class);
+    }
     @JsonIgnoreProperties
     public record BulkData(
             @JsonProperty("updated_at") OffsetDateTime updatedAt,
