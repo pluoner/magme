@@ -5,17 +5,17 @@ import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
-public class CardDBUpdateServiceRunner implements CommandLineRunner {
+@Component
+public class CardDBUpdateRunner implements CommandLineRunner {
 
-    private static final Logger logger = Logger.getLogger(CardDBUpdateServiceRunner.class.getName());
+    private static final Logger logger = Logger.getLogger(CardDBUpdateRunner.class.getName());
     private final CardDBUpdateService cardPopulationService;
     @Value("${app.startup-target}")
     private String startupTarget;
 
-    public CardDBUpdateServiceRunner(CardDBUpdateService cardPopulationService) {
+    public CardDBUpdateRunner(CardDBUpdateService cardPopulationService) {
         this.cardPopulationService = cardPopulationService;
     }
 
