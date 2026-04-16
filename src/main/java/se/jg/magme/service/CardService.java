@@ -127,12 +127,11 @@ public class CardService {
     private void createNoCtcJpg(Card c) {
         Path orgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getId() + ".jpg");
         Mat orgImg;
+        if (!Files.exists(orgPath)) {
+            downloadCardImg(c);
+        }
         try {
             orgImg = readImage(orgPath);
-            if (orgImg.empty()) {
-                downloadCardImg(c);
-                orgImg = readImage(orgPath);
-            }
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to read image", e);
             return;
@@ -146,13 +145,14 @@ public class CardService {
         Imgproc.cvtColor(orgImgTop, grayImgTop, Imgproc.COLOR_BGR2GRAY);
         //HoughCircles
         Mat circles = new Mat();
-        Imgproc.HoughCircles(grayImgTop, circles, Imgproc.HOUGH_GRADIENT,
+        Imgproc.equalizeHist(grayImgTop, grayImgTop);
+        Imgproc.HoughCircles(grayImgTop, circles, Imgproc.HOUGH_GRADIENT_ALT,
                 1.0,
-                20.0,
+                5.0,
                 100.0,
-                30.0,
-                10,
-                40
+                0.8,
+                5,
+                20
         );
         if (circles.empty()) {
             logger.log(Level.INFO, "No mana circles found in Img, scryfallID:" + c.getOracleID(), new Throwable());
@@ -191,7 +191,12 @@ public class CardService {
             Imgproc.circle(result, center, 2, new Scalar(0, 0, 255), -1);
         }
         Path noCtcPath = Path.of(cardImagesPath, "noctc", c.getSetCode(), c.getId() + ".jpg");
-        Imgcodecs.imwrite(noCtcPath.toString(), result);
+        try {
+            Files.createDirectories(noCtcPath.getParent());
+            Imgcodecs.imwrite(noCtcPath.toString(), result);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to save noctc card image", new Throwable());
+        }
 /*        int extendedRadius = (int)(leftMostCircle[2]*1.1);
         double curXStart = leftMostCircle[0]-extendedRadius*2;
         Rect columnSlice = new Rect((int)curXStart, (int)(leftMostCircle[1]-extendedRadius), extendedRadius, extendedRadius*2);
