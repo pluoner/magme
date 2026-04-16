@@ -155,7 +155,7 @@ public class CardService {
                 20
         );
         if (circles.empty()) {
-            logger.log(Level.INFO, "No mana circles found in Img, scryfallID:" + c.getOracleID(), new Throwable());
+            logger.log(Level.INFO, "No mana circles found in Img, scryfallID: " + c.getOracleID() + ", mana cost is: " + c.getManaCost(), new Throwable());
             return;
         }
         double[] leftMostCircle = null; // center x, center y, radius
