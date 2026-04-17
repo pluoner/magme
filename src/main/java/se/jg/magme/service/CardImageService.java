@@ -39,34 +39,32 @@ public class CardImageService {
         this.cardService = cardService;
     }
 
-    public ResponseEntity<byte[]> getCardJpg(UUID id) {
+    public ResponseEntity<byte[]> getCard(UUID id) {
         Card c = cardRepository.getCardById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card not found"));
-        Path jpgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getId() + ".jpg");
-        if (!Files.exists(jpgPath)) {
-            downloadCardImg(c);
+                .orElseThrow(() -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card record not found"));
+        if (!Files.exists(c.getOrgPath(cardImagesPath))) {
+            fetchOrg(c);
         }
         byte[] responseBody;
         try{
-            responseBody = Files.readAllBytes(jpgPath);
+            responseBody = Files.readAllBytes(c.getOrgPath(cardImagesPath));
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatusCode.valueOf(404), "cardImg not found");
+            throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Original card image not found");
         }
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(responseBody);
     }
 
-    private void downloadCardImg(Card c) {
+    private void fetchOrg(Card c) {
         byte[] imgBytes = scryfallService.getCardImage(c.getId());
-        Path jpgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getId() + ".jpg");
         try {
-            Files.createDirectories(jpgPath.getParent());
-            Files.write(jpgPath, imgBytes);
+            Files.createDirectories(c.getOrgPath(cardImagesPath).getParent());
+            Files.write(c.getOrgPath(cardImagesPath), imgBytes);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to save card image", new Throwable());
+            logger.log(Level.SEVERE, "Failed to save original card image", new Throwable());
         }
     }
 
-    public ResponseEntity<byte[]> getNoCmcCard(UUID id) {
+    public ResponseEntity<byte[]> getNoCmc(UUID id) {
         Card c;
         if (id == null) {
             c = cardService.getRandomCard(null, null, null);
@@ -74,27 +72,29 @@ public class CardImageService {
             c = cardRepository.getCardById(id)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card not found"));
         }
-        Path nocmcPath = Path.of(cardImagesPath, "nocmc", c.getSetCode(), c.getId() + ".jpg");
-        if (!Files.exists(nocmcPath)) {
-            createNoCmcJpg(c);
+        while (true) {
+            createNoCmc(c);
+            if (Files.exists(c.getNoCmcPath(cardImagesPath))) {
+                break;
+            }
+            c = cardService.getRandomCard(null, null, null);
         }
         byte[] responseBody;
         try{
-            responseBody = Files.readAllBytes(nocmcPath);
+            responseBody = Files.readAllBytes(c.getNoCmcPath(cardImagesPath));
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "cardImg not found");
         }
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(responseBody);
     }
 
-    private void createNoCmcJpg(Card c) {
-        Path orgPath = Path.of(cardImagesPath, "org", c.getSetCode(), c.getId() + ".jpg");
+    private void createNoCmc(Card c) {
         Mat orgImg;
-        if (!Files.exists(orgPath)) {
-            downloadCardImg(c);
+        if (!Files.exists(c.getOrgPath(cardImagesPath))) {
+            fetchOrg(c);
         }
         try {
-            orgImg = readImage(orgPath);
+            orgImg = readImage(c.getOrgPath(cardImagesPath));
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to read image", e);
             return;
@@ -117,8 +117,10 @@ public class CardImageService {
                 5,
                 20
         );
-        if (circles.empty()) {
-            logger.log(Level.INFO, "No mana circles found in Img, scryfallID: " + c.getOracleID() + ", mana cost is: " + c.getManaCost(), new Throwable());
+        if (circles.empty() && c.getManaCost() != null && !c.getManaCost().isEmpty()) {
+            throw new ResponseStatusException(HttpStatusCode.valueOf(404), "No mana circles found in Img, scryfallID: " + c.getOracleID() + ", mana cost is: " + c.getManaCost());
+        } else if (circles.empty()) {
+            logger.log(Level.INFO, "No mana circles found in Img, scryfallID: " + c.getOracleID() + ", mana cost is empty", new Throwable());
             return;
         }
         double[] leftMostCircle = null; // center x, center y, radius

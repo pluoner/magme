@@ -21,13 +21,13 @@ public class CardImageController {
     public ResponseEntity<byte[]> getCard(
             @RequestParam() UUID id
     ) {
-        return cardImageService.getCardJpg(id);
+        return cardImageService.getCard(id);
     }
 
     @GetMapping("/nocmc")
     public ResponseEntity<byte[]> getNoCmcCard(
             @RequestParam(required = false) UUID id
     ) {
-        return cardImageService.getNoCmcCard(id);
+        return cardImageService.getNoCmc(id);
     }
 }

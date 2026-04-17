@@ -5,8 +5,10 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Persistable;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,6 +60,12 @@ public class Card implements Persistable<UUID> {
     @JsonProperty("flavor_text")
     private String flavorText;
 
+    public Path getOrgPath(String cardImagesPath) {
+        return Path.of(cardImagesPath, "org", setCode, id + ".jpg");
+    } 
+    public Path getNoCmcPath(String cardImagesPath) {
+        return Path.of(cardImagesPath, "nocmc", setCode, id + ".jpg");
+    }
 }
 
 @Converter
@@ -74,4 +82,5 @@ class StringListConverter implements AttributeConverter<List<String>, String> {
         if (string == null || string.isEmpty()) return new ArrayList<>();
         return new ArrayList<>(Arrays.asList(string.split(",")));
     }
+
 }
