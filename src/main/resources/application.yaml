@@ -19,4 +19,4 @@ spring:
       ddl-auto: update
 app:
   card-images-path: ./data/img
-  startup-target: SKIP_IF_EXISTS
+  startup-target: CHECK_AND_POPULATE

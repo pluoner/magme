@@ -88,13 +88,13 @@ public class CardImageService {
         return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(responseBody);
     }
 
-    private void createNoCmc(Card c) {
+    private void createNoCmc(Card card) {
         Mat orgImg;
-        if (!Files.exists(c.getOrgPath(cardImagesPath))) {
-            fetchOrg(c);
+        if (!Files.exists(card.getOrgPath(cardImagesPath))) {
+            fetchOrg(card);
         }
         try {
-            orgImg = readImage(c.getOrgPath(cardImagesPath));
+            orgImg = readImage(card.getOrgPath(cardImagesPath));
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to read image", e);
             return;
@@ -106,82 +106,47 @@ public class CardImageService {
         Mat orgImgTop = orgImg.submat(0, (int)(orgImg.rows() * 0.2), 0, orgImg.cols());
         Mat grayImgTop = new Mat();
         Imgproc.cvtColor(orgImgTop, grayImgTop, Imgproc.COLOR_BGR2GRAY);
-        //HoughCircles
-        Mat circles = new Mat();
         Imgproc.equalizeHist(grayImgTop, grayImgTop);
-        Imgproc.HoughCircles(grayImgTop, circles, Imgproc.HOUGH_GRADIENT_ALT,
-                1.0,
-                5.0,
-                100.0,
-                0.8,
-                5,
-                20
-        );
-        if (circles.empty() && c.getManaCost() != null && !c.getManaCost().isEmpty()) {
-            throw new ResponseStatusException(HttpStatusCode.valueOf(404), "No mana circles found in Img, scryfallID: " + c.getOracleID() + ", mana cost is: " + c.getManaCost());
-        } else if (circles.empty()) {
-            logger.log(Level.INFO, "No mana circles found in Img, scryfallID: " + c.getOracleID() + ", mana cost is empty", new Throwable());
-            return;
-        }
-        double[] leftMostCircle = null; // center x, center y, radius
-        double[] rightMostCircle = null; // center x, center y, radius
-        for (int i = 0; i < circles.cols(); i++) {
-            double[] curC = circles.get(0,i);
-            if (i == 0) {
-                leftMostCircle = curC;
-                rightMostCircle = curC;
-                continue;
-            }
-            if (curC[0] > rightMostCircle[0]) {
-                rightMostCircle = curC;
-                leftMostCircle = curC;
-            }
-        }
-        for (int i = 0; i < circles.cols(); i++) {
-            double[] curC = circles.get(0,i);
-            if (curC[0] < leftMostCircle[0] && Math.abs(curC[1] - leftMostCircle[1]) < 3) {
-                leftMostCircle = curC;
-            }
-        }
-        // debug
-        Mat result = orgImg.clone();
-        for (int i = 0; i < circles.cols(); i++) {
-            double[] data = circles.get(0, i);
-            Point center = new Point(data[0], data[1]);
-            int radius = (int) data[2];
+        int copyRegionStartX = decidedCopyXVal(card, grayImgTop);
 
-            // draw the circle outline
-            Imgproc.circle(result, center, radius, new Scalar(0, 255, 0), 2);
-            // draw the center point
-            Imgproc.circle(result, center, 2, new Scalar(0, 0, 255), -1);
-        }
-        Path noCmcPath = Path.of(cardImagesPath, "nocmc", c.getSetCode(), c.getId() + ".jpg");
+        Rect copySlice = new Rect(copyRegionStartX, card.nameManaRegionTopY(), card.manaRegionStartX() - copyRegionStartX - 3, card.nameManaRegionHeight()); //holding copy area
+        Rect stretchSlice = new Rect(copyRegionStartX, card.nameManaRegionTopY(), card.manaRegionEndX() - copyRegionStartX, card.nameManaRegionHeight()); //holding strech area
+        Mat result = orgImg.clone();
+        Mat copyArea = orgImg.submat(copySlice);
+        Mat pasteArea = result.submat(stretchSlice);
+        Imgproc.resize(copyArea, pasteArea, pasteArea.size(), 0, 0, Imgproc.INTER_LINEAR);
+        Path noCmcPath = Path.of(cardImagesPath, "nocmc", card.getSetCode(), card.getId() + ".jpg");
         try {
             Files.createDirectories(noCmcPath.getParent());
             Imgcodecs.imwrite(noCmcPath.toString(), result);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to save nocmc card image", new Throwable());
         }
-/*        int extendedRadius = (int)(leftMostCircle[2]*1.1);
-        double curXStart = leftMostCircle[0]-extendedRadius*2;
-        Rect columnSlice = new Rect((int)curXStart, (int)(leftMostCircle[1]-extendedRadius), extendedRadius, extendedRadius*2);
-        double mean = Core.mean(grayImgTop.submat(columnSlice)).val[0]; // mean brightness of a thin area to the left of the leftmost mana circle
+    }
+
+    private int decidedCopyXVal(Card card, Mat mat) {
+        int guessedNameStartX = guessNameStartX(card, mat);
+        int highestAcceptableStartX = card.manaRegionStartX() - card.cmcDiameter();
+        int lowestNeededStartX = card.manaRegionStartX() - card.cmcDiameter() * 4;
+        if (guessedNameStartX > highestAcceptableStartX) {
+            return highestAcceptableStartX;
+        }
+        return Math.max(guessedNameStartX, lowestNeededStartX);
+    }
+
+    private int guessNameStartX(Card card, Mat mat) {
+        int safetyMargin = 2;
+        int curXStart = card.manaRegionStartX() - card.cmcDiameter() - safetyMargin; //additional 2px safety margin
+        Rect columnSlice = new Rect(curXStart, card.cmcDiameter(), card.nameManaRegionTopY() - safetyMargin, card.nameManaRegionHeight() - safetyMargin * 2);
+        double mean = Core.mean(mat.submat(columnSlice)).val[0]; // mean brightness of a thin area to the left of the leftmost mana circle
         while (curXStart > 0) {
-            columnSlice = new Rect((columnSlice.x-extendedRadius), columnSlice.y, columnSlice.width, columnSlice.height);
-            if (Math.abs(Core.mean(grayImgTop.submat(columnSlice)).val[0] - mean) > 40) {
+            columnSlice = new Rect((columnSlice.x-columnSlice.width/2), columnSlice.y, columnSlice.width, columnSlice.height);
+            if (Math.abs(Core.mean(mat.submat(columnSlice)).val[0] - mean) > 40) {
                 break;
             }
-            curXStart-=curXStart-extendedRadius;
+            curXStart-=curXStart-columnSlice.width/2;
         }
-        int startXCoord = columnSlice.x + extendedRadius;
-        Rect copySlice = new Rect((int)(startXCoord), columnSlice.y, (int)(leftMostCircle[0] - extendedRadius - startXCoord), columnSlice.height); //holding copy area
-        Rect StretchSlice = new Rect((int)(startXCoord), columnSlice.y, (int)(rightMostCircle[0] + extendedRadius - startXCoord), columnSlice.height); //holding strech area
-        Mat result = orgImg.clone();
-        Mat copyArea = orgImg.submat(copySlice);
-        Mat pasteArea = result.submat(StretchSlice);
-        Imgproc.resize(copyArea, pasteArea, pasteArea.size(), 0, 0, Imgproc.INTER_LINEAR);
-        Path noCmcPath = Path.of(cardImagesPath, "nocmc", c.getSetCode(), c.getScryfallID() + ".jpg");
-        Imgcodecs.imwrite(noCmcPath.toString(), result);*/
+        return columnSlice.x + columnSlice.width/2;
     }
 
     private Mat readImage(Path path) throws IOException {

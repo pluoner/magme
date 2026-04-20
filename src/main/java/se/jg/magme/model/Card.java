@@ -5,8 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Persistable;
+import se.jg.magme.constans.FrameDimensions;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -59,6 +59,7 @@ public class Card implements Persistable<UUID> {
     @Column(columnDefinition = "TEXT")
     @JsonProperty("flavor_text")
     private String flavorText;
+    private String frame;
 
     public Path getOrgPath(String cardImagesPath) {
         return Path.of(cardImagesPath, "org", setCode, id + ".jpg");
@@ -66,6 +67,43 @@ public class Card implements Persistable<UUID> {
     public Path getNoCmcPath(String cardImagesPath) {
         return Path.of(cardImagesPath, "nocmc", setCode, id + ".jpg");
     }
+
+    public int manaRegionStartX() {
+        FrameDimensions.FrameDimension fd = FrameDimensions.getFrameDimension(frame);
+        int noManaCircles = manaCost.length() - manaCost.replace("{", "").length();
+        int manaCirclePixels = noManaCircles * fd.getCmcDiameter();
+        int manaCircleSpacePixels = 0;
+        if (noManaCircles > 1) {
+            manaCircleSpacePixels = (noManaCircles - 1) * fd.getCmcSymbolDistance();
+        }
+        return fd.getManaBoxRightX() - manaCirclePixels + manaCircleSpacePixels;
+    }
+
+    public int manaRegionEndX() {
+        FrameDimensions.FrameDimension fd = FrameDimensions.getFrameDimension(frame);
+        return fd.getManaBoxRightX();
+    }
+
+    public int nameManaRegionTopY() {
+        FrameDimensions.FrameDimension fd = FrameDimensions.getFrameDimension(frame);
+        return fd.getNameManaRegionTopY();
+    }
+
+    public int nameManaRegionBottomY() {
+        FrameDimensions.FrameDimension fd = FrameDimensions.getFrameDimension(frame);
+        return fd.getNameManaRegionBottomY();
+    }
+
+    public int cmcDiameter() {
+        FrameDimensions.FrameDimension fd = FrameDimensions.getFrameDimension(frame);
+        return fd.getCmcDiameter();
+    }
+
+    public int nameManaRegionHeight() {
+        FrameDimensions.FrameDimension fd = FrameDimensions.getFrameDimension(frame);
+        return fd.nameManaRegionHeight();
+    }
+
 }
 
 @Converter
