@@ -45,9 +45,9 @@ public class FrameDimensions {
                         41,
                         447,
                         35,
-                        67,
-                        23,
-                        1)
+                        69,
+                        25,
+                        3)
         );
         //2015 style frame
         FrameDimension fd2015 = new FrameDimension(

@@ -26,9 +26,8 @@ public class CardController {
     @GetMapping("/random")
     public Card getRandom(
         @RequestParam(required = false) List<String> set,
-        @RequestParam(required = false) List<String> color,
-        @RequestParam(required = false) List<String> type
+        @RequestParam(required = false) List<String> color
     ) {
-        return cardService.getRandomCard(set, color, type);
+        return cardService.getRandomCard(set, color);
     }
 }

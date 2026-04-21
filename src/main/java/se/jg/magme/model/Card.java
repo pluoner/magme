@@ -77,6 +77,9 @@ public class Card implements Persistable<UUID> {
 
     public int manaRegionStartX() {
         FrameDimensions.FrameDimension fd = FrameDimensions.getFrameDimension(frame);
+        if (manaCost == null || manaCost.isEmpty()) {
+            return fd.getManaBoxRightX();
+        }
         int noManaCircles = manaCost.length() - manaCost.replace("{", "").length();
         int manaCirclePixels = noManaCircles * fd.getCmcDiameter();
         int manaCircleSpacePixels = 0;

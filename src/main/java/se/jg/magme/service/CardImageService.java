@@ -19,6 +19,7 @@ import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,7 +67,9 @@ public class CardImageService {
     public ResponseEntity<byte[]> getNoCmc(UUID id) {
         Card c;
         if (id == null) {
-            c = cardService.getRandomCard(null, null, null);
+            // set testing: neo
+            List<String> sets = List.of("neo", "8ed", "mir", "chk", "rav", "tsp", "lrw", "ala", "zen", "isd", "rtr");
+            c = cardService.getRandomCard(sets, null);
         } else {
             c = cardRepository.getCardById(id)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card not found"));
@@ -76,7 +79,7 @@ public class CardImageService {
             if (Files.exists(c.getNoCmcPath(appProperties.getCardImagesPath()))) {
                 break;
             }
-            c = cardService.getRandomCard(null, null, null);
+            c = cardService.getRandomCard(null, null);
         }
         byte[] responseBody;
         try{
@@ -135,15 +138,16 @@ public class CardImageService {
 
     private int guessNameStartX(Card card, Mat mat) {
         int safetyMargin = 2;
-        int curXStart = card.manaRegionStartX() - card.cmcDiameter() - safetyMargin; //additional 2px safety margin
-        Rect columnSlice = new Rect(curXStart, card.cmcDiameter(), card.nameManaRegionTopY() - safetyMargin, card.nameManaRegionHeight() - safetyMargin * 2);
+        int curXStart = card.manaRegionStartX() - card.cmcDiameter() - safetyMargin;
+        Rect columnSlice = new Rect(curXStart, card.cmcDiameter(), card.nameManaRegionTopY(), card.nameManaRegionHeight());
         double mean = Core.mean(mat.submat(columnSlice)).val[0]; // mean brightness of a thin area to the left of the leftmost mana circle
+        curXStart -= columnSlice.width/2;
         while (curXStart > 0) {
-            columnSlice = new Rect((columnSlice.x-columnSlice.width/2), columnSlice.y, columnSlice.width, columnSlice.height);
+            columnSlice = new Rect(curXStart, columnSlice.y, columnSlice.width, columnSlice.height);
             if (Math.abs(Core.mean(mat.submat(columnSlice)).val[0] - mean) > 40) {
                 break;
             }
-            curXStart-=curXStart-columnSlice.width/2;
+            curXStart -= columnSlice.width/2;
         }
         return columnSlice.x + columnSlice.width/2;
     }
