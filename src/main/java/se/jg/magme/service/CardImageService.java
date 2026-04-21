@@ -3,13 +3,13 @@ package se.jg.magme.service;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import se.jg.magme.config.AppProperties;
 import se.jg.magme.model.Card;
 import se.jg.magme.repository.CardRepository;
 import javax.imageio.ImageIO;
@@ -26,28 +26,27 @@ import java.util.logging.Logger;
 @Service
 public class CardImageService {
 
-    @Value("${app.card-images-path}")
-    private String cardImagesPath;
-
     private final CardRepository cardRepository;
     private final ScryfallClient scryfallService;
     private final CardService cardService;
+    private final AppProperties appProperties;
     private static final Logger logger = Logger.getLogger(CardImageService.class.getName());
-    public CardImageService(CardRepository cardRepository, ScryfallClient scryfallService, CardService cardService) {
+    public CardImageService(CardRepository cardRepository, ScryfallClient scryfallService, CardService cardService, AppProperties appProperties) {
         this.cardRepository = cardRepository;
         this.scryfallService = scryfallService;
         this.cardService = cardService;
+        this.appProperties = appProperties;
     }
 
     public ResponseEntity<byte[]> getCard(UUID id) {
         Card c = cardRepository.getCardById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card record not found"));
-        if (!Files.exists(c.getOrgPath(cardImagesPath))) {
+        if (!Files.exists(c.getOrgPath(appProperties.getCardImagesPath()))) {
             fetchOrg(c);
         }
         byte[] responseBody;
         try{
-            responseBody = Files.readAllBytes(c.getOrgPath(cardImagesPath));
+            responseBody = Files.readAllBytes(c.getOrgPath(appProperties.getCardImagesPath()));
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Original card image not found");
         }
@@ -57,8 +56,8 @@ public class CardImageService {
     private void fetchOrg(Card c) {
         byte[] imgBytes = scryfallService.getCardImage(c.getId());
         try {
-            Files.createDirectories(c.getOrgPath(cardImagesPath).getParent());
-            Files.write(c.getOrgPath(cardImagesPath), imgBytes);
+            Files.createDirectories(c.getOrgPath(appProperties.getCardImagesPath()).getParent());
+            Files.write(c.getOrgPath(appProperties.getCardImagesPath()), imgBytes);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to save original card image", new Throwable());
         }
@@ -74,14 +73,14 @@ public class CardImageService {
         }
         while (true) {
             createNoCmc(c);
-            if (Files.exists(c.getNoCmcPath(cardImagesPath))) {
+            if (Files.exists(c.getNoCmcPath(appProperties.getCardImagesPath()))) {
                 break;
             }
             c = cardService.getRandomCard(null, null, null);
         }
         byte[] responseBody;
         try{
-            responseBody = Files.readAllBytes(c.getNoCmcPath(cardImagesPath));
+            responseBody = Files.readAllBytes(c.getNoCmcPath(appProperties.getCardImagesPath()));
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "cardImg not found");
         }
@@ -90,11 +89,11 @@ public class CardImageService {
 
     private void createNoCmc(Card card) {
         Mat orgImg;
-        if (!Files.exists(card.getOrgPath(cardImagesPath))) {
+        if (!Files.exists(card.getOrgPath(appProperties.getCardImagesPath()))) {
             fetchOrg(card);
         }
         try {
-            orgImg = readImage(card.getOrgPath(cardImagesPath));
+            orgImg = readImage(card.getOrgPath(appProperties.getCardImagesPath()));
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to read image", e);
             return;
@@ -115,7 +114,7 @@ public class CardImageService {
         Mat copyArea = orgImg.submat(copySlice);
         Mat pasteArea = result.submat(stretchSlice);
         Imgproc.resize(copyArea, pasteArea, pasteArea.size(), 0, 0, Imgproc.INTER_LINEAR);
-        Path noCmcPath = Path.of(cardImagesPath, "nocmc", card.getSetCode(), card.getId() + ".jpg");
+        Path noCmcPath = Path.of(appProperties.getCardImagesPath(), "nocmc", card.getSetCode(), card.getId() + ".jpg");
         try {
             Files.createDirectories(noCmcPath.getParent());
             Imgcodecs.imwrite(noCmcPath.toString(), result);

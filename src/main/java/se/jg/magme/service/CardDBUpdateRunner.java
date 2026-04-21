@@ -3,24 +3,26 @@ package se.jg.magme.service;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
+import se.jg.magme.config.AppProperties;
 
 @Component
 public class CardDBUpdateRunner implements CommandLineRunner {
 
     private static final Logger logger = Logger.getLogger(CardDBUpdateRunner.class.getName());
     private final CardDBUpdateService cardPopulationService;
-    @Value("${app.startup-target}")
-    private String startupTarget;
+    private final AppProperties appProperties;
 
-    public CardDBUpdateRunner(CardDBUpdateService cardPopulationService) {
+    public CardDBUpdateRunner(CardDBUpdateService cardPopulationService, AppProperties appProperties) {
         this.cardPopulationService = cardPopulationService;
+        this.appProperties = appProperties;
     }
 
     @Override
     public void run(String... args) {
+        String startupTarget = appProperties.getStartupTarget();
         if (args.length != 0) {
             startupTarget = args[0];
         }

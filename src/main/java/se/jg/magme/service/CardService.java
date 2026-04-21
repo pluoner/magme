@@ -1,6 +1,5 @@
 package se.jg.magme.service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -10,20 +9,15 @@ import se.jg.magme.repository.CardRepository;
 
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
 
 @Service
 public class CardService {
 
-    @Value("${app.card-images-path}")
-    private String cardImagesPath;
+    private final Random rand = new Random();
 
     private final CardRepository cardRepository;
-    private final ScryfallClient scryfallService;
-    private static final Logger logger = Logger.getLogger(CardService.class.getName());
-    public CardService(CardRepository cardRepository, ScryfallClient scryfallService) {
+    public CardService(CardRepository cardRepository) {
         this.cardRepository = cardRepository;
-        this.scryfallService = scryfallService;
     }
 
     public List<Card> getAllCards() {
@@ -55,7 +49,6 @@ public class CardService {
         if (res.isEmpty()) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "No card matching criteria found");
         }
-        Random rand = new Random();
         return res.get(rand.nextInt(res.size()));
     }
 }

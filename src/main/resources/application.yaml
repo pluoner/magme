@@ -10,11 +10,11 @@ spring:
     defer-datasource-initialization: true
     properties:
       hibernate:
-        order_inserts: true
-        order_updates: true
+        '[order_inserts]': true
+        '[order_updates]': true
         jdbc:
-          batch_size: 500
-        generate_statistics: true
+          '[batch_size]': 500
+        '[generate_statistics]': true
     hibernate:
       ddl-auto: update
 app:

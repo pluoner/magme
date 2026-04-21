@@ -15,6 +15,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity @Getter @Setter @NoArgsConstructor
+@Table(
+    indexes = {
+        @Index(name = "idx_oracle_id", columnList = "oracle_id"),
+        @Index(name = "idx_set_code", columnList = "set_code"),
+        @Index(name = "idx_type_line", columnList = "type_line")
+    }
+)
 public class Card implements Persistable<UUID> {
 
     @Id
