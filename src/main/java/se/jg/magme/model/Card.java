@@ -103,7 +103,6 @@ public class Card implements Persistable<UUID> {
         FrameDimensions.FrameDimension fd = FrameDimensions.getFrameDimension(frame);
         return fd.nameManaRegionHeight();
     }
-
 }
 
 @Converter

@@ -14,5 +14,5 @@ public class ScryfallSyncState {
     private Long id = 1L;
     private OffsetDateTime oracleUpdatedAt;
     private OffsetDateTime oracleCardsUpdatedAt;
-
+    private String cardModelSignature;
 }

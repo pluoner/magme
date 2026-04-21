@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Getter
 
-public final class FrameDimensions {
+public class FrameDimensions {
 
     private FrameDimensions() {
         throw new UnsupportedOperationException("Static class - do not make an instance of this");
