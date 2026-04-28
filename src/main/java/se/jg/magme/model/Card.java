@@ -81,10 +81,10 @@ public class Card implements Persistable<UUID> {
             return fd.getManaBoxRightX();
         }
         int noManaCircles = manaCost.length() - manaCost.replace("{", "").length();
-        int manaCirclePixels = noManaCircles * fd.getCmcDiameter();
+        int manaCirclePixels = noManaCircles * fd.getManaSymbolDiameter();
         int manaCircleSpacePixels = 0;
         if (noManaCircles > 1) {
-            manaCircleSpacePixels = (noManaCircles - 1) * fd.getCmcSymbolDistance();
+            manaCircleSpacePixels = (noManaCircles - 1) * fd.getManaSymbolDistance();
         }
         return fd.getManaBoxRightX() - manaCirclePixels + manaCircleSpacePixels;
     }
@@ -106,7 +106,7 @@ public class Card implements Persistable<UUID> {
 
     public int cmcDiameter() {
         FrameDimensions.FrameDimension fd = FrameDimensions.getFrameDimension(frame);
-        return fd.getCmcDiameter();
+        return fd.getManaSymbolDiameter();
     }
 
     public int nameManaRegionHeight() {

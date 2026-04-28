@@ -83,8 +83,8 @@ public class FrameDimensions {
         private final int manaBoxRightX;
         private final int nameManaRegionTopY;
         private final int nameManaRegionBottomY;
-        private final int cmcDiameter;
-        private final int cmcSymbolDistance;
+        private final int manaSymbolDiameter;
+        private final int manaSymbolDistance;
 
         public int nameManaRegionHeight() {
             return nameManaRegionBottomY - nameManaRegionTopY;
