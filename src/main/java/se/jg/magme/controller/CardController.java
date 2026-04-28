@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import se.jg.magme.model.Card;
 import se.jg.magme.service.CardService;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/cards")
@@ -21,6 +22,11 @@ public class CardController {
     @GetMapping("/all")
     public List<Card> getAllCards() {
         return cardService.getAllCards();
+    }
+
+    @GetMapping("/byid")
+    public Card getCardById(@RequestParam UUID id) {
+        return cardService.getCardById(id);
     }
 
     @GetMapping("/random")

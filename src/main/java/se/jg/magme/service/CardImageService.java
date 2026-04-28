@@ -67,8 +67,8 @@ public class CardImageService {
     public ResponseEntity<byte[]> getNoCmc(UUID id) {
         Card c;
         if (id == null) {
-            // set testing: neo
-            List<String> sets = List.of("neo", "8ed", "mir", "chk", "rav", "tsp", "lrw", "ala", "zen", "isd", "rtr");
+            // set testing: 
+            List<String> sets = List.of("neo", "8ed", "chk", "rav", "tsp", "lrw", "ala", "zen", "isd", "rtr");
             c = cardService.getRandomCard(sets, null);
         } else {
             c = cardRepository.getCardById(id)

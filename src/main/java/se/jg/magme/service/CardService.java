@@ -10,6 +10,7 @@ import se.jg.magme.repository.CardRepository;
 
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,6 +27,11 @@ public class CardService {
 
     public List<Card> getAllCards() {
         return cardRepository.findAll();
+    }
+    public Card getCardById(UUID id) {
+        return cardRepository.findById(id).orElseThrow(
+            () -> new ResponseStatusException(HttpStatusCode.valueOf(404), "Card with id " + id + " not found")
+        );
     }
 
     public Card getRandomCard(List<String> sets, List<String> colors) {
@@ -56,7 +62,7 @@ public class CardService {
         }
         int randIndex = rand.nextInt(res.size());
         Card c = res.get(randIndex);
-        logger.log(Level.INFO, () -> "Random card: " + c.getName() + ", set: " + c.getSetCode() + ", oracleID: " + c.getOracleID());
+        logger.log(Level.INFO, () -> "Random card: " + c.getName() + ", set: " + c.getSetCode() + ", id: " + c.getId());
         return c;
     }
 }
