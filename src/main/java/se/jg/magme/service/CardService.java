@@ -1,6 +1,5 @@
 package se.jg.magme.service;
 
-import org.springframework.beans.factory.BeanRegistry.Spec;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,7 @@ public class CardService {
     private final Random rand = new Random();
 
     private final CardRepository cardRepository;
-    private static final Logger logger = Logger.getLogger(CardImageService.class.getName());
+    private static final Logger logger = Logger.getLogger(CardService.class.getName());
     public CardService(CardRepository cardRepository) {
         this.cardRepository = cardRepository;
     }

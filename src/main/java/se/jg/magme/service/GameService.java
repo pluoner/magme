@@ -1,0 +1,39 @@
+package se.jg.magme.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import jakarta.servlet.http.HttpSession;
+
+@Service
+public class GameService {
+
+    private final GameSessionService gameSessionService;
+
+    public GameService(GameSessionService gameSessionService) {
+        this.gameSessionService = gameSessionService;
+    }
+
+    public void newGame(String set, List<String> colors, HttpSession session) {
+        session.invalidate();
+        ArrayList<String> selectedColors = (colors == null) ? new ArrayList<>() : new ArrayList<>(colors);
+        String selectedSet = (set == null || set.isBlank()) ? null : set;
+        gameSessionService.save(session, new GameSessionService.SearchCriteria(selectedSet, selectedColors));
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
