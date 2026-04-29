@@ -1,6 +1,12 @@
 spring:
   application:
     name: magme
+  thymeleaf:
+    cache: false
+  web:
+    resources:
+      chain:
+        cache: false
   datasource:
     url: jdbc:h2:file:./data/mtgdb
     driver-class-name: org.h2.Driver
