@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTG Card Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=IM+Fell+English&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+
+<div class="sigil top-left"></div>
+<div class="sigil top-right"></div>
+<div class="sigil bottom-left"></div>
+<div class="sigil bottom-right"></div>
+
+<main class="container">
+    <header>
+        <div class="title-ornament">✦ ✦ ✦</div>
+        <h1>MTG Card Explorer</h1>
+        <div class="title-ornament">✦ ✦ ✦</div>
+    </header>
+
+    <div class="card-panel">
+        <form th:action="@{/game/start}" method="post">
+
+            <div class="field-group">
+                <label for="set">Set</label>
+                <div class="select-wrapper">
+                    <select id="set" name="set">
+                        <option value="">— Any Set —</option>
+                        <option value="lea">Limited Edition Alpha</option>
+                        <option value="2x2">Double Masters 2022</option>
+                        <option value="bro">The Brothers' War</option>
+                        <option value="dmu">Dominaria United</option>
+                        <option value="ltr">The Lord of the Rings</option>
+                        <option value="mat">March of the Machine</option>
+                        <option value="mom">March of the Machine</option>
+                        <option value="one">Phyrexia: All Will Be One</option>
+                        <option value="woe">Wilds of Eldraine</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label>Colors</label>
+                <div class="color-grid">
+                    <label class="color-label white" title="White">
+                        <input type="checkbox" name="colors" value="W">
+                        <span class="color-pip">W</span>
+                        <span class="color-name">White</span>
+                    </label>
+                    <label class="color-label blue" title="Blue">
+                        <input type="checkbox" name="colors" value="U">
+                        <span class="color-pip">U</span>
+                        <span class="color-name">Blue</span>
+                    </label>
+                    <label class="color-label black" title="Black">
+                        <input type="checkbox" name="colors" value="B">
+                        <span class="color-pip">B</span>
+                        <span class="color-name">Black</span>
+                    </label>
+                    <label class="color-label red" title="Red">
+                        <input type="checkbox" name="colors" value="R">
+                        <span class="color-pip">R</span>
+                        <span class="color-name">Red</span>
+                    </label>
+                    <label class="color-label green" title="Green">
+                        <input type="checkbox" name="colors" value="G">
+                        <span class="color-pip">G</span>
+                        <span class="color-name">Green</span>
+                    </label>
+                    <label class="color-label colorless" title="Colorless">
+                        <input type="checkbox" name="colors" value="C">
+                        <span class="color-pip">C</span>
+                        <span class="color-name">Colorless</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="submit-row">
+                <button type="submit" class="go-button">
+                    <span class="btn-glyph">⬡</span>
+                    Begin
+                    <span class="btn-glyph">⬡</span>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</main>
+
+</body>
+</html>
+

@@ -1,0 +1,292 @@
+/* === TOKENS === */
+:root {
+    --gold:        #c9a84c;
+    --gold-light:  #e8cc7a;
+    --gold-dim:    #7a5f28;
+    --black-deep:  #0a0a0f;
+    --black-panel: #111118;
+    --black-card:  #16161f;
+    --black-border:#1e1e2a;
+    --text-primary:#e8dfc8;
+    --text-muted:  #8a7d5a;
+
+    /* MTG mana colors */
+    --mana-w: #f9f0d2;
+    --mana-u: #4a7fbf;
+    --mana-b: #9b59b6;
+    --mana-r: #c0392b;
+    --mana-g: #27ae60;
+    --mana-c: #95a5a6;
+}
+
+/* === RESET & BASE === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    min-height: 100vh;
+    background-color: var(--black-deep);
+    background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, #2a1a00 0%, transparent 70%),
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 59px,
+            rgba(201,168,76,0.03) 59px,
+            rgba(201,168,76,0.03) 60px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 59px,
+            rgba(201,168,76,0.03) 59px,
+            rgba(201,168,76,0.03) 60px
+        );
+    color: var(--text-primary);
+    font-family: 'IM Fell English', Georgia, serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* === CORNER SIGILS === */
+.sigil {
+    position: fixed;
+    width: 80px;
+    height: 80px;
+    opacity: 0.18;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cpolygon points='40,4 76,76 4,76' fill='none' stroke='%23c9a84c' stroke-width='2'/%3E%3Ccircle cx='40' cy='40' r='18' fill='none' stroke='%23c9a84c' stroke-width='1.5'/%3E%3Cline x1='40' y1='4' x2='40' y2='22' stroke='%23c9a84c' stroke-width='1'/%3E%3C/svg%3E");
+}
+.top-left     { top: 16px; left: 16px; }
+.top-right    { top: 16px; right: 16px; transform: scaleX(-1); }
+.bottom-left  { bottom: 16px; left: 16px; transform: scaleY(-1); }
+.bottom-right { bottom: 16px; right: 16px; transform: scale(-1); }
+
+/* === LAYOUT === */
+.container {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    animation: fadeIn 0.9s ease both;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* === HEADER === */
+header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    color: var(--gold);
+    letter-spacing: 0.06em;
+    text-shadow:
+        0 0 40px rgba(201,168,76,0.5),
+        0 2px 4px rgba(0,0,0,0.8);
+}
+
+.title-ornament {
+    color: var(--gold-dim);
+    font-size: 0.75rem;
+    letter-spacing: 0.4em;
+}
+
+/* === PANEL === */
+.card-panel {
+    background: var(--black-panel);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    padding: 2rem 2.2rem;
+    position: relative;
+    box-shadow:
+        0 0 0 1px var(--black-deep),
+        inset 0 1px 0 rgba(201,168,76,0.1),
+        0 20px 60px rgba(0,0,0,0.7);
+}
+
+/* corner accents */
+.card-panel::before,
+.card-panel::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: var(--gold);
+    border-style: solid;
+}
+.card-panel::before {
+    top: -1px; left: -1px;
+    border-width: 2px 0 0 2px;
+}
+.card-panel::after {
+    bottom: -1px; right: -1px;
+    border-width: 0 2px 2px 0;
+}
+
+/* === FORM FIELDS === */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+}
+
+/* === SELECT === */
+.select-wrapper {
+    position: relative;
+}
+.select-wrapper::after {
+    content: '▾';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold-dim);
+    pointer-events: none;
+}
+
+select {
+    width: 100%;
+    appearance: none;
+    background: var(--black-card);
+    border: 1px solid var(--black-border);
+    border-radius: 3px;
+    color: var(--text-primary);
+    font-family: 'IM Fell English', serif;
+    font-size: 1rem;
+    padding: 0.65rem 2.5rem 0.65rem 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+select:focus {
+    outline: none;
+    border-color: var(--gold-dim);
+}
+select option {
+    background: var(--black-card);
+}
+
+/* === COLOR GRID === */
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+}
+
+.color-label {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    background: var(--black-card);
+    border: 1px solid var(--black-border);
+    border-radius: 3px;
+    padding: 0.55rem 0.75rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    font-family: 'IM Fell English', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--text-muted);
+}
+.color-label input[type="checkbox"] { display: none; }
+
+.color-pip {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    color: #fff;
+    transition: transform 0.15s;
+}
+.color-label.white  .color-pip { background: radial-gradient(circle at 35% 35%, #fffbe8, var(--mana-w)); color: #555; }
+.color-label.blue   .color-pip { background: radial-gradient(circle at 35% 35%, #7fb3e8, var(--mana-u)); }
+.color-label.black  .color-pip { background: radial-gradient(circle at 35% 35%, #c07de0, var(--mana-b)); }
+.color-label.red    .color-pip { background: radial-gradient(circle at 35% 35%, #e06050, var(--mana-r)); }
+.color-label.green  .color-pip { background: radial-gradient(circle at 35% 35%, #4ecd80, var(--mana-g)); }
+.color-label.colorless .color-pip { background: radial-gradient(circle at 35% 35%, #c5cfd0, var(--mana-c)); color: #333; }
+
+/* checked state */
+.color-label:has(input:checked) {
+    border-color: var(--gold-dim);
+    background: #1c1a10;
+    color: var(--text-primary);
+}
+.color-label:has(input:checked) .color-pip {
+    transform: scale(1.15);
+    box-shadow: 0 0 8px rgba(201,168,76,0.4);
+}
+.color-label:hover {
+    border-color: #333340;
+}
+
+/* === BUTTON === */
+.submit-row {
+    display: flex;
+    justify-content: center;
+    padding-top: 0.4rem;
+}
+
+.go-button {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--black-deep);
+    background: linear-gradient(160deg, var(--gold-light) 0%, var(--gold) 50%, #a07830 100%);
+    border: none;
+    border-radius: 3px;
+    padding: 0.75rem 2.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    position: relative;
+    box-shadow:
+        0 2px 12px rgba(201,168,76,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.go-button:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(201,168,76,0.45);
+}
+.go-button:active {
+    transform: translateY(0);
+    filter: brightness(0.95);
+}
+
+.btn-glyph {
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
