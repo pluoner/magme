@@ -31,8 +31,8 @@ public class PageController {
     }
 
     @PostMapping("/game")
-    public String startGame(@RequestParam(required = false) String set,
-        @RequestParam(required = false) List<String> colors,
+    public String startGame(@RequestParam(name = "set", required = false) String set,
+        @RequestParam(name = "colors", required = false) List<String> colors,
         HttpSession session) {
             gameService.newGame(set, colors, session);
             return "redirect:/game";
