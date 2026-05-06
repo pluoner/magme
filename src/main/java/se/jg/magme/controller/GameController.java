@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/game")
 public class GameController {
 
-    record GuessRespons(String status, String message) {}
+    record GuessResponse(String status, String message, String failedCardId) {}
 
     private final GameService gameService;
     public GameController(GameService gameService) {
@@ -24,9 +24,9 @@ public class GameController {
     }
 
     @PostMapping("/guessedCmc")
-    public GuessRespons postGuessedCmc(@RequestBody Integer cmc, HttpSession session) {
+    public GuessResponse postGuessedCmc(@RequestBody Integer cmc, HttpSession session) {
         String[] result = gameService.guessCmc(cmc, session);
-        return new GuessRespons(result[0], result[1]);
+        return new GuessResponse(result[0], result[1], result.length > 2 ? result[2] : null);
     }
     
     @GetMapping("/getCurrentCard")

@@ -19,7 +19,7 @@ public class ImageController {
 
     @GetMapping("/card")
     public ResponseEntity<byte[]> getCard(
-            @RequestParam() UUID id
+            @RequestParam(name = "id") UUID id
     ) {
         return cardImageService.getCard(id);
     }

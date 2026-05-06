@@ -80,7 +80,7 @@
     <main class="container">
         <header>
             <div class="title-ornament">* * *</div>
-            <h1>Guess the CMC</h1>
+            <h1>Booster Tutor</h1>
             <div class="title-ornament">* * *</div>
         </header>
 
@@ -145,6 +145,29 @@
                 loadingEl.textContent = '';
             }
 
+            async function fetchOrgImage(failedCardId) {
+                loadingEl.textContent = 'Loading card...';
+                imageEl.style.display = 'none';
+
+                const response = await fetch(`/img/card?id=${failedCardId}`, {
+                    method: 'GET',
+                    cache: 'no-store'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load card image.');
+                }
+
+                const blob = await response.blob();
+                if (currentObjectUrl) {
+                    URL.revokeObjectURL(currentObjectUrl);
+                }
+                currentObjectUrl = URL.createObjectURL(blob);
+                imageEl.src = currentObjectUrl;
+                imageEl.style.display = 'block';
+                loadingEl.textContent = '';
+            }
+
             async function postGuess(cmcValue) {
                 const response = await fetch('/game/guessedCmc', {
                     method: 'POST',
@@ -188,10 +211,10 @@
                 buttonEl.disabled = true;
 
                 try {
-                    const { status, message } = await postGuess(parsed);
+                    const { status, message, failedCardId } = await postGuess(parsed);
 
                     if (status === 'GAMEOVER') {
-                        await fetchNoCmcImage();
+                        await fetchOrgImage(failedCardId);
                         resultEl.textContent = 'Game over: ' + message;
                         inputEl.value = '';
                         inputEl.focus();

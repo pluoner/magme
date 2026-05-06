@@ -32,7 +32,7 @@ public class GameService {
         String selectedSet = (set == null || set.isBlank()) ? null : set;
         gameSessionService.save(session, new GameSessionService.SearchCriteria(selectedSet, selectedColors));
         Card card = setNextCard(session);
-        session.setAttribute("currentCard", card.getId());
+        session.setAttribute(GameSessionService.CURRENT_CARD_KEY, card.getId());
         session.setAttribute(GameSessionService.PREVIOUS_CARDS_KEY, new ArrayList<UUID>());
         session.setAttribute(GameSessionService.CURRENT_HIGH_SCORE_KEY, 0);
     }
@@ -57,7 +57,7 @@ public class GameService {
         } else {
             int currentHighScore = (int) session.getAttribute(GameSessionService.CURRENT_HIGH_SCORE_KEY);
             session.setAttribute(GameSessionService.CURRENT_HIGH_SCORE_KEY, 0);
-            return new String[]{"GAMEOVER", "Wrong! The correct CMC was " + currentCmc + ". Your score has been reset to 0. You had a streak of " + currentHighScore + ". Try again!"};
+            return new String[]{"GAMEOVER", "Wrong! The correct CMC was " + currentCmc + ". Your score has been reset to 0. You had a streak of " + currentHighScore + ". Try again!", currentUUID.toString()};
         }
     }
 
@@ -67,7 +67,7 @@ public class GameService {
         List<String> colors = gameSessionService.getSearchCriteria(session).map(GameSessionService.SearchCriteria::colors).orElse(null);
         List<String> sets = set == null ? null : List.of(set);
         Card card = cardService.getRandomCard(sets, colors, excludeIds);
-        session.setAttribute("currentCard", card.getId());
+        session.setAttribute(GameSessionService.CURRENT_CARD_KEY, card.getId());
         return card;
     }
 
@@ -77,7 +77,7 @@ public class GameService {
     }
 
     private Optional<List<UUID>> getPreviousCards(HttpSession session) {
-        Object raw = session.getAttribute("previousCards");
+        Object raw = session.getAttribute(GameSessionService.PREVIOUS_CARDS_KEY);
         if (!(raw instanceof List<?> list)) {
             return Optional.empty();
         }
