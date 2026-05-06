@@ -1,6 +1,5 @@
 # magme
 Search on rarity
-Show original card at game over: OK, but is now a bit weird at restart.
 Different mode: best out of X
 Hard mode: Guess on exact mana cost
 Fix the set chooser (based on Frame?)
