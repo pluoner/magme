@@ -29,6 +29,10 @@ public class GameSessionService {
         return (SearchCriteria) session.getAttribute(SEARCH_CRITERIA_KEY);
     }
 
+    public Optional<SearchCriteria> getSearchCriteria(HttpSession session) {
+        return Optional.ofNullable(get(session));
+    }
+
     public record SearchCriteria(String set, List<String> colors) implements java.io.Serializable {
     }
 }

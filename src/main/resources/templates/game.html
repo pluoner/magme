@@ -188,17 +188,19 @@
                 buttonEl.disabled = true;
 
                 try {
-                    const guessResult = await postGuess(parsed);
-                    const status = (guessResult.status || guessResult.result || '').toString().toUpperCase();
+                    const { status, message } = await postGuess(parsed);
 
                     if (status === 'GAMEOVER') {
-                        const text = guessResult.result || guessResult.message || 'No result provided';
-                        resultEl.textContent = 'Game over: result ' + text;
+                        await fetchNoCmcImage();
+                        resultEl.textContent = 'Game over: ' + message;
+                        inputEl.value = '';
+                        inputEl.focus();
                         return;
                     }
 
-                    if (status === 'CONTINUE' || status === 'OK') {
+                    if (status === 'OK') {
                         await fetchNoCmcImage();
+                        resultEl.textContent = message;
                         inputEl.value = '';
                         inputEl.focus();
                         return;

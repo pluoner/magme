@@ -1,11 +1,15 @@
 package se.jg.magme.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -26,31 +30,62 @@ public class GameService {
     }
 
     public void newGame(String set, List<String> colors, HttpSession session) {
-        session.invalidate();
-        session = httpServletRequest.getSession(true);
+        Collections.list(session.getAttributeNames()).forEach(session::removeAttribute);
         ArrayList<String> selectedColors = (colors == null) ? new ArrayList<>() : new ArrayList<>(colors);
         String selectedSet = (set == null || set.isBlank()) ? null : set;
         gameSessionService.save(session, new GameSessionService.SearchCriteria(selectedSet, selectedColors));
-        List<String> sets = selectedSet == null ? null : List.of(selectedSet);
-        Card card = cardService.getRandomCard(sets, selectedColors);
+        Card card = setNextCard(session);
         session.setAttribute("currentCard", card.getId());
         session.setAttribute("previousCards", new ArrayList<UUID>());
         session.setAttribute("currentHighScore", 0);
     }
 
-    public String guessCmc(Integer guessedCmc) {
+    public String[] guessCmc(Integer guessedCmc, HttpSession session) {
         if (guessedCmc == null) {
-            return "Please provide a CMC value.";
+            return new String[]{"ERROR", "Please provide a CMC value."};
         }
-        return "OK";
+        UUID currentUUID = gameSessionService.getCurrentCardId(session).orElseThrow(
+            () -> new ResponseStatusException(HttpStatusCode.valueOf(404), "No current card found for session " + session.getId()));
+        Card currentCard = cardService.getCardById(currentUUID);
+        double currentCmcDouble = currentCard.getCmc();
+        int currentCmc = (int) Math.round(currentCmcDouble);
+        List<UUID> previousCards = getPreviousCards(session).orElseGet(ArrayList::new);
+        previousCards.add(currentUUID);
+        session.setAttribute("previousCards", previousCards);
+        setNextCard(session);
+        if (guessedCmc == currentCmc) {
+            int newScore = (int) session.getAttribute("currentHighScore") + 1;
+            session.setAttribute("currentHighScore", newScore);
+            return new String[]{"OK", "Correct! Your score is now " + newScore + "."};
+        } else {
+            int currentHighScore = (int) session.getAttribute("currentHighScore");
+            session.setAttribute("currentHighScore", 0);
+            return new String[]{"GAMEOVER", "Wrong! The correct CMC was " + currentCmc + ". Your score has been reset to 0. You had a streak of " + currentHighScore + ". Try again!"};
+        }
     }
 
-    public ResponseEntity<byte[]> getCurrentCard() {
-        HttpSession session = httpServletRequest.getSession(true);
+    private Card setNextCard(HttpSession session) {
+        List<UUID> excludeIds = getPreviousCards(session).orElseGet(ArrayList::new);
+        String set = gameSessionService.getSearchCriteria(session).map(GameSessionService.SearchCriteria::set).orElse(null);
+        List<String> colors = gameSessionService.getSearchCriteria(session).map(GameSessionService.SearchCriteria::colors).orElse(null);
+        List<String> sets = set == null ? null : List.of(set);
+        Card card = cardService.getRandomCard(sets, colors, excludeIds);
+        session.setAttribute("currentCard", card.getId());
+        return card;
+    }
+
+    public ResponseEntity<byte[]> getCurrentCard(HttpSession session) {
         UUID currentUUID = gameSessionService.getCurrentCardId(session).orElseThrow(() -> new RuntimeException("No current card found for session " + session.getId()));
         return imageService.getNoCmc(currentUUID);
     }
 
+    private Optional<List<UUID>> getPreviousCards(HttpSession session) {
+        Object raw = session.getAttribute("previousCards");
+        if (!(raw instanceof List<?> list)) {
+            return Optional.empty();
+        }
+        return Optional.of(list.stream().map(UUID.class::cast).collect(java.util.stream.Collectors.toCollection(ArrayList::new)));
+    }
 }
 
 
