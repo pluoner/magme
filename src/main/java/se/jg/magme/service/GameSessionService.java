@@ -2,6 +2,8 @@ package se.jg.magme.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,10 @@ public class GameSessionService {
             criteria.colors() == null ? new ArrayList<>() : new ArrayList<>(criteria.colors())
         );
         session.setAttribute(SEARCH_CRITERIA_KEY, criteria);
+    }
+
+    public Optional<UUID> getCurrentCardId(HttpSession session) {
+        return Optional.ofNullable((UUID) session.getAttribute("currentCard"));
     }
 
     public SearchCriteria get(HttpSession session) {

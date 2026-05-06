@@ -25,6 +25,7 @@ import java.util.UUID;
 public class Card implements Persistable<UUID> {
 
     @Id
+    @Column(name = "id")
     private UUID id;
     @Transient
     private boolean isNew = true;

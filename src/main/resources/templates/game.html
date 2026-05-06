@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guess the CMC</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=IM+Fell+English&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600&family=IM+Fell+English&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" th:href="@{/style.css}">
     <style>
         .game-image-wrap {
@@ -66,156 +69,159 @@
         }
     </style>
 </head>
+
 <body>
 
-<div class="sigil top-left"></div>
-<div class="sigil top-right"></div>
-<div class="sigil bottom-left"></div>
-<div class="sigil bottom-right"></div>
+    <div class="sigil top-left"></div>
+    <div class="sigil top-right"></div>
+    <div class="sigil bottom-left"></div>
+    <div class="sigil bottom-right"></div>
 
-<main class="container">
-    <header>
-        <div class="title-ornament">* * *</div>
-        <h1>Guess the CMC</h1>
-        <div class="title-ornament">* * *</div>
-    </header>
+    <main class="container">
+        <header>
+            <div class="title-ornament">* * *</div>
+            <h1>Guess the CMC</h1>
+            <div class="title-ornament">* * *</div>
+        </header>
 
-    <div class="card-panel">
-        <form id="guess-form" autocomplete="off">
-            <div class="field-group">
-                <label>Hidden Card</label>
-                <div class="game-image-wrap">
-                    <img id="card-image" class="game-image" alt="Card image without mana cost">
-                    <p id="loading-text" class="status-text">Loading card...</p>
+        <div class="card-panel">
+            <form id="guess-form" autocomplete="off">
+                <div class="field-group">
+                    <label>Hidden Card</label>
+                    <div class="game-image-wrap">
+                        <img id="card-image" class="game-image" alt="Card without mana cost">
+                        <p id="loading-text" class="status-text">Loading card...</p>
+                    </div>
                 </div>
-            </div>
 
-            <div class="field-group">
-                <label for="cmc">Your Guess</label>
-                <input id="cmc" name="cmc" class="guess-input" type="number" step="1" min="0" inputmode="numeric" required>
-            </div>
+                <div class="field-group">
+                    <label for="cmc">Your Guess</label>
+                    <input id="cmc" name="cmc" class="guess-input" type="number" step="1" min="0" inputmode="numeric"
+                        required>
+                </div>
 
-            <p id="result-text" class="result-text"></p>
+                <p id="result-text" class="result-text"></p>
 
-            <div class="submit-row">
-                <button id="guess-button" type="submit" class="go-button guess-button">
-                    Guess
-                </button>
-            </div>
-        </form>
-    </div>
-</main>
+                <div class="submit-row">
+                    <button id="guess-button" type="submit" class="go-button guess-button">
+                        Guess
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
 
-<script>
-(() => {
-    const imageEl = document.getElementById('card-image');
-    const loadingEl = document.getElementById('loading-text');
-    const resultEl = document.getElementById('result-text');
-    const formEl = document.getElementById('guess-form');
-    const inputEl = document.getElementById('cmc');
-    const buttonEl = document.getElementById('guess-button');
+    <script>
+        (() => {
+            const imageEl = document.getElementById('card-image');
+            const loadingEl = document.getElementById('loading-text');
+            const resultEl = document.getElementById('result-text');
+            const formEl = document.getElementById('guess-form');
+            const inputEl = document.getElementById('cmc');
+            const buttonEl = document.getElementById('guess-button');
 
-    let currentObjectUrl;
+            let currentObjectUrl;
 
-    async function fetchNoCmcImage() {
-        loadingEl.textContent = 'Loading card...';
-        imageEl.style.display = 'none';
+            async function fetchNoCmcImage() {
+                loadingEl.textContent = 'Loading card...';
+                imageEl.style.display = 'none';
 
-        const response = await fetch('/img/nocmc', {
-            method: 'GET',
-            cache: 'no-store'
-        });
+                const response = await fetch('/game/getCurrentCard', {
+                    method: 'GET',
+                    cache: 'no-store'
+                });
 
-        if (!response.ok) {
-            throw new Error('Failed to load card image.');
-        }
+                if (!response.ok) {
+                    throw new Error('Failed to load card image.');
+                }
 
-        const blob = await response.blob();
-        if (currentObjectUrl) {
-            URL.revokeObjectURL(currentObjectUrl);
-        }
-        currentObjectUrl = URL.createObjectURL(blob);
-        imageEl.src = currentObjectUrl;
-        imageEl.style.display = 'block';
-        loadingEl.textContent = '';
-    }
-
-    async function postGuess(cmcValue) {
-        const response = await fetch('/cards/guessedCmc', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(cmcValue)
-        });
-
-        if (!response.ok) {
-            throw new Error('Guess request failed.');
-        }
-
-        const contentType = response.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-            return response.json();
-        }
-
-        const text = await response.text();
-        return { status: text, result: text };
-    }
-
-    async function init() {
-        try {
-            await fetchNoCmcImage();
-        } catch (err) {
-            loadingEl.textContent = err.message;
-        }
-    }
-
-    formEl.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        resultEl.textContent = '';
-
-        const parsed = Number.parseInt(inputEl.value, 10);
-        if (Number.isNaN(parsed)) {
-            resultEl.textContent = 'Enter an integer guess first.';
-            return;
-        }
-
-        buttonEl.disabled = true;
-
-        try {
-            const guessResult = await postGuess(parsed);
-            const status = (guessResult.status || guessResult.result || '').toString().toUpperCase();
-
-            if (status === 'GAMEOVER') {
-                const text = guessResult.result || guessResult.message || 'No result provided';
-                resultEl.textContent = 'Game over: result ' + text;
-                return;
+                const blob = await response.blob();
+                if (currentObjectUrl) {
+                    URL.revokeObjectURL(currentObjectUrl);
+                }
+                currentObjectUrl = URL.createObjectURL(blob);
+                imageEl.src = currentObjectUrl;
+                imageEl.style.display = 'block';
+                loadingEl.textContent = '';
             }
 
-            if (status === 'CONTINUE' || status === 'OK') {
-                await fetchNoCmcImage();
-                inputEl.value = '';
-                inputEl.focus();
-                return;
+            async function postGuess(cmcValue) {
+                const response = await fetch('/game/guessedCmc', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(cmcValue)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Guess request failed.');
+                }
+
+                const contentType = response.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    return response.json();
+                }
+
+                const text = await response.text();
+                return { status: text, result: text };
             }
 
-            resultEl.textContent = 'Unexpected response: ' + JSON.stringify(guessResult);
-        } catch (err) {
-            resultEl.textContent = err.message;
-        } finally {
-            buttonEl.disabled = false;
-        }
-    });
+            async function init() {
+                try {
+                    await fetchNoCmcImage();
+                } catch (err) {
+                    loadingEl.textContent = err.message;
+                }
+            }
 
-    window.addEventListener('beforeunload', () => {
-        if (currentObjectUrl) {
-            URL.revokeObjectURL(currentObjectUrl);
-        }
-    });
+            formEl.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                resultEl.textContent = '';
 
-    init();
-})();
-</script>
+                const parsed = Number.parseInt(inputEl.value, 10);
+                if (Number.isNaN(parsed)) {
+                    resultEl.textContent = 'Enter an integer guess first.';
+                    return;
+                }
+
+                buttonEl.disabled = true;
+
+                try {
+                    const guessResult = await postGuess(parsed);
+                    const status = (guessResult.status || guessResult.result || '').toString().toUpperCase();
+
+                    if (status === 'GAMEOVER') {
+                        const text = guessResult.result || guessResult.message || 'No result provided';
+                        resultEl.textContent = 'Game over: result ' + text;
+                        return;
+                    }
+
+                    if (status === 'CONTINUE' || status === 'OK') {
+                        await fetchNoCmcImage();
+                        inputEl.value = '';
+                        inputEl.focus();
+                        return;
+                    }
+
+                    resultEl.textContent = 'Unexpected response: ' + JSON.stringify(guessResult);
+                } catch (err) {
+                    resultEl.textContent = err.message;
+                } finally {
+                    buttonEl.disabled = false;
+                }
+            });
+
+            window.addEventListener('beforeunload', () => {
+                if (currentObjectUrl) {
+                    URL.revokeObjectURL(currentObjectUrl);
+                }
+            });
+
+            init();
+        })();
+    </script>
 
 </body>
+
 </html>

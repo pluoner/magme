@@ -5,15 +5,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import se.jg.magme.service.CardImageService;
+import se.jg.magme.service.ImageService;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/img")
-public class CardImageController {
-    private final CardImageService cardImageService;
+public class ImageController {
+    private final ImageService cardImageService;
 
-    public CardImageController(CardImageService cardImageService) {
+    public ImageController(ImageService cardImageService) {
         this.cardImageService = cardImageService;
     }
 
@@ -26,7 +26,7 @@ public class CardImageController {
 
     @GetMapping("/nocmc")
     public ResponseEntity<byte[]> getNoCmcCard(
-            @RequestParam(required = false) UUID id
+            @RequestParam(name = "id", required = false) UUID id
     ) {
         return cardImageService.getNoCmc(id);
     }

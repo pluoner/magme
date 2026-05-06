@@ -34,6 +34,9 @@ public class CardService {
     }
 
     public Card getRandomCard(List<String> sets, List<String> colors) {
+        return getRandomCard(sets, colors, null);
+    }
+    public Card getRandomCard(List<String> sets, List<String> colors, List<UUID> excludeIds) {
         Specification<Card> setSpec = (root, query, cb) -> {
             if (sets == null) {
                 return null;
@@ -53,8 +56,14 @@ public class CardService {
             }
             return root.get("typeLine").in(types);
         };
+        Specification<Card> excludeSpec = (root, query, cb) -> {
+            if (excludeIds == null || excludeIds.isEmpty()) {
+                return null;
+            }
+            return cb.not(root.get("id").in(excludeIds));
+        };
         Specification<Card> manaCostSpec = (root, query, cb) -> cb.and(cb.isNotNull(root.get("manaCost")), cb.notEqual(root.get("manaCost"), ""));
-        Specification<Card> totSpec = Specification.where(setSpec).and(colorSpec).and(typeSpec).and(manaCostSpec);
+        Specification<Card> totSpec = Specification.where(setSpec).and(colorSpec).and(typeSpec).and(excludeSpec).and(manaCostSpec);
         List<Card> res = cardRepository.findAll(totSpec);
         if (res.isEmpty()) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "No card matching criteria found");

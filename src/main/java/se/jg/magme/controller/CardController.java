@@ -8,8 +8,6 @@ import se.jg.magme.model.Card;
 import se.jg.magme.service.CardService;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
@@ -38,11 +36,5 @@ public class CardController {
         @RequestParam(required = false) List<String> color
     ) {
         return cardService.getRandomCard(set, color);
-    }
-    @PostMapping("/guessedCmc")
-    public String postGuessedCmc(@RequestBody Integer cmc) {
-        record GuessRespons(String message) {}
-        GuessRespons response = new GuessRespons("OK");
-        return response.message();
     }
 }

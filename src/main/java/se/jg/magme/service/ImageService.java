@@ -25,14 +25,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
-public class CardImageService {
+public class ImageService {
 
     private final CardRepository cardRepository;
     private final ScryfallClient scryfallService;
     private final CardService cardService;
     private final AppProperties appProperties;
-    private static final Logger logger = Logger.getLogger(CardImageService.class.getName());
-    public CardImageService(CardRepository cardRepository, ScryfallClient scryfallService, CardService cardService, AppProperties appProperties) {
+    private static final Logger logger = Logger.getLogger(ImageService.class.getName());
+    public ImageService(CardRepository cardRepository, ScryfallClient scryfallService, CardService cardService, AppProperties appProperties) {
         this.cardRepository = cardRepository;
         this.scryfallService = scryfallService;
         this.cardService = cardService;
