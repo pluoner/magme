@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import se.jg.magme.model.Card;
 
@@ -19,12 +18,10 @@ import se.jg.magme.model.Card;
 public class GameService {
 
     private final GameSessionService gameSessionService;
-    private final HttpServletRequest httpServletRequest;
     private final CardService cardService;
     private final ImageService imageService;
-    public GameService(GameSessionService gameSessionService, HttpServletRequest httpServletRequest, CardService cardService, ImageService imageService) {
+    public GameService(GameSessionService gameSessionService, CardService cardService, ImageService imageService) {
         this.gameSessionService = gameSessionService;
-        this.httpServletRequest = httpServletRequest;
         this.cardService = cardService;
         this.imageService = imageService;
     }
@@ -36,8 +33,8 @@ public class GameService {
         gameSessionService.save(session, new GameSessionService.SearchCriteria(selectedSet, selectedColors));
         Card card = setNextCard(session);
         session.setAttribute("currentCard", card.getId());
-        session.setAttribute("previousCards", new ArrayList<UUID>());
-        session.setAttribute("currentHighScore", 0);
+        session.setAttribute(GameSessionService.PREVIOUS_CARDS_KEY, new ArrayList<UUID>());
+        session.setAttribute(GameSessionService.CURRENT_HIGH_SCORE_KEY, 0);
     }
 
     public String[] guessCmc(Integer guessedCmc, HttpSession session) {
@@ -54,12 +51,12 @@ public class GameService {
         session.setAttribute("previousCards", previousCards);
         setNextCard(session);
         if (guessedCmc == currentCmc) {
-            int newScore = (int) session.getAttribute("currentHighScore") + 1;
-            session.setAttribute("currentHighScore", newScore);
+            int newScore = (int) session.getAttribute(GameSessionService.CURRENT_HIGH_SCORE_KEY) + 1;
+            session.setAttribute(GameSessionService.CURRENT_HIGH_SCORE_KEY, newScore);
             return new String[]{"OK", "Correct! Your score is now " + newScore + "."};
         } else {
-            int currentHighScore = (int) session.getAttribute("currentHighScore");
-            session.setAttribute("currentHighScore", 0);
+            int currentHighScore = (int) session.getAttribute(GameSessionService.CURRENT_HIGH_SCORE_KEY);
+            session.setAttribute(GameSessionService.CURRENT_HIGH_SCORE_KEY, 0);
             return new String[]{"GAMEOVER", "Wrong! The correct CMC was " + currentCmc + ". Your score has been reset to 0. You had a streak of " + currentHighScore + ". Try again!"};
         }
     }

@@ -12,6 +12,8 @@ import jakarta.servlet.http.HttpSession;
 @Service
 public class GameSessionService {
     public static final String SEARCH_CRITERIA_KEY = "searchCriteria";
+    public static final String PREVIOUS_CARDS_KEY = "previousCards";
+    public static final String CURRENT_HIGH_SCORE_KEY = "currentHighScore";
 
     public void save(HttpSession session, SearchCriteria criteria) {
         criteria = new SearchCriteria(
