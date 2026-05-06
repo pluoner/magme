@@ -67,6 +67,56 @@
             transform: none;
             filter: none;
         }
+
+        .gameover-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 10, 10, 0.75);
+            z-index: 9999;
+            cursor: pointer;
+            padding: 1rem;
+        }
+
+        .gameover-overlay.show {
+            display: flex;
+        }
+
+        .gameover-panel {
+            width: min(680px, 95vw);
+            max-height: 92vh;
+            overflow: auto;
+            background: #1d1b19;
+            border: 2px solid var(--gold-dim);
+            border-radius: 6px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .gameover-title {
+            margin: 0 0 0.5rem;
+            color: var(--gold-light);
+        }
+
+        .gameover-message {
+            margin: 0 0 1rem;
+        }
+
+        .gameover-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            border: 1px solid var(--black-border);
+        }
+
+        .gameover-hint {
+            margin-top: 0.75rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 
@@ -111,6 +161,15 @@
         </div>
     </main>
 
+    <div id="gameover-overlay" class="gameover-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="gameover-panel">
+            <h2 class="gameover-title">Game Over</h2>
+            <p id="gameover-message" class="gameover-message"></p>
+            <img id="gameover-image" class="gameover-image" alt="Failed card image">
+            <p class="gameover-hint">Click anywhere or press Enter to play again.</p>
+        </div>
+    </div>
+
     <script>
         (() => {
             const imageEl = document.getElementById('card-image');
@@ -119,8 +178,31 @@
             const formEl = document.getElementById('guess-form');
             const inputEl = document.getElementById('cmc');
             const buttonEl = document.getElementById('guess-button');
+            const overlayEl = document.getElementById('gameover-overlay');
+            const overlayMessageEl = document.getElementById('gameover-message');
+            const overlayImageEl = document.getElementById('gameover-image');
 
             let currentObjectUrl;
+
+            function showGameOverOverlay(message, imageSrc) {
+                overlayMessageEl.textContent = message;
+                overlayImageEl.src = imageSrc;
+                overlayEl.classList.add('show');
+                overlayEl.setAttribute('aria-hidden', 'false');
+            }
+
+            function restartGame() {
+                window.location.reload();
+            }
+
+            overlayEl.addEventListener('click', restartGame);
+
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' && overlayEl.classList.contains('show')) {
+                    event.preventDefault();
+                    restartGame();
+                }
+            });
 
             async function fetchNoCmcImage() {
                 loadingEl.textContent = 'Loading card...';
@@ -215,9 +297,7 @@
 
                     if (status === 'GAMEOVER') {
                         await fetchOrgImage(failedCardId);
-                        resultEl.textContent = 'Game over: ' + message;
-                        inputEl.value = '';
-                        inputEl.focus();
+                        showGameOverOverlay('Game over: ' + message, imageEl.src);
                         return;
                     }
 
@@ -229,7 +309,7 @@
                         return;
                     }
 
-                    resultEl.textContent = 'Unexpected response: ' + JSON.stringify(guessResult);
+                    resultEl.textContent = 'Unexpected response: ' + JSON.stringify({ status, message, failedCardId });
                 } catch (err) {
                     resultEl.textContent = err.message;
                 } finally {
