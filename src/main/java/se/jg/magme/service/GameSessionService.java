@@ -19,7 +19,8 @@ public class GameSessionService {
     public void save(HttpSession session, SearchCriteria criteria) {
         criteria = new SearchCriteria(
             (criteria.set() == null || criteria.set().isBlank()) ? null : criteria.set(),
-            criteria.colors() == null ? new ArrayList<>() : new ArrayList<>(criteria.colors())
+            criteria.colors() == null ? new ArrayList<>() : new ArrayList<>(criteria.colors()),
+            criteria.rarities() == null ? new ArrayList<>() : new ArrayList<>(criteria.rarities())
         );
         session.setAttribute(SEARCH_CRITERIA_KEY, criteria);
     }
@@ -36,6 +37,6 @@ public class GameSessionService {
         return Optional.ofNullable(get(session));
     }
 
-    public record SearchCriteria(String set, List<String> colors) implements java.io.Serializable {
+    public record SearchCriteria(String set, List<String> colors, List<String> rarities) implements java.io.Serializable {
     }
 }

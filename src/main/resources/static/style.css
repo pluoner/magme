@@ -234,7 +234,10 @@ select option {
 .color-label.red    .color-pip { background: radial-gradient(circle at 35% 35%, #e06050, var(--mana-r)); }
 .color-label.green  .color-pip { background: radial-gradient(circle at 35% 35%, #4ecd80, var(--mana-g)); }
 .color-label.colorless .color-pip { background: radial-gradient(circle at 35% 35%, #c5cfd0, var(--mana-c)); color: #333; }
-
+.color-label.common    .color-pip { background: radial-gradient(circle at 35% 35%, #888, #333); color: #ccc; }
+.color-label.uncommon  .color-pip { background: radial-gradient(circle at 35% 35%, #d4d4d4, #8a9fa8); color: #222; }
+.color-label.rare      .color-pip { background: radial-gradient(circle at 35% 35%, #f9e47c, #c9a84c); color: #333; }
+.color-label.mythic    .color-pip { background: radial-gradient(circle at 35% 35%, #f0903a, #b94820); color: #fff; }
 /* checked state */
 .color-label:has(input:checked) {
     border-color: var(--gold-dim);

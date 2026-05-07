@@ -32,20 +32,37 @@
                     <label for="set">Set</label>
                     <div class="select-wrapper">
                         <select id="set" name="set">
-                            <option value="">— Any Set —</option>
-                            <option value="lea">Limited Edition Alpha</option>
-                            <option value="2x2">Double Masters 2022</option>
-                            <option value="bro">The Brothers' War</option>
-                            <option value="dmu">Dominaria United</option>
-                            <option value="ltr">The Lord of the Rings</option>
-                            <option value="mat">March of the Machine</option>
-                            <option value="mom">March of the Machine</option>
-                            <option value="one">Phyrexia: All Will Be One</option>
-                            <option value="woe">Wilds of Eldraine</option>
+                            <option value="">— All —</option>
+                            <option th:each="set : ${supportedSets}" th:value="${set.code}" th:text="${set.name}">
+                            </option>
                         </select>
                     </div>
                 </div>
-
+                <div class="field-group">
+                    <label>Rarity</label>
+                    <div class="color-grid" style="grid-template-columns: repeat(4, 1fr);">
+                        <label class="color-label common" title="Common">
+                            <input type="checkbox" name="rarities" value="common" checked>
+                            <span class="color-pip">C</span>
+                            <span class="color-name">Common</span>
+                        </label>
+                        <label class="color-label uncommon" title="Uncommon">
+                            <input type="checkbox" name="rarities" value="uncommon" checked>
+                            <span class="color-pip">U</span>
+                            <span class="color-name">Uncommon</span>
+                        </label>
+                        <label class="color-label rare" title="Rare">
+                            <input type="checkbox" name="rarities" value="rare" checked>
+                            <span class="color-pip">R</span>
+                            <span class="color-name">Rare</span>
+                        </label>
+                        <label class="color-label mythic" title="Mythic">
+                            <input type="checkbox" name="rarities" value="mythic" checked>
+                            <span class="color-pip">M</span>
+                            <span class="color-name">Mythic</span>
+                        </label>
+                    </div>
+                </div>
                 <div class="field-group">
                     <label>Colors</label>
                     <div class="color-grid">

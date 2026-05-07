@@ -3,6 +3,7 @@ package se.jg.magme.controller;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,15 +27,17 @@ public class PageController {
     }
     
     @GetMapping("/start")
-    public String startPage() {
+    public String startPage(Model model) {
+        model.addAttribute("supportedSets", gameService.getSupportedSets());
         return "start";
     }
 
     @PostMapping("/game")
     public String startGame(@RequestParam(name = "set", required = false) String set,
         @RequestParam(name = "colors", required = false) List<String> colors,
+        @RequestParam(name = "rarities", required = false) List<String> rarities,
         HttpSession session) {
-            gameService.newGame(set, colors, session);
+            gameService.newGame(set, colors, rarities, session);
             return "redirect:/game";
     }
 

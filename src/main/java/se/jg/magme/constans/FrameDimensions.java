@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -18,7 +19,7 @@ public class FrameDimensions {
         dimensionMap = new EnumMap<>(FrameId.class);
         //1993 style frame
         dimensionMap.put(
-                FrameId.Y1993,
+                FrameId.F1993,
                 new FrameDimension(
                         36,
                         450,
@@ -29,7 +30,7 @@ public class FrameDimensions {
         );
         //1997 style frame
         dimensionMap.put(
-                FrameId.Y1997,
+                FrameId.F1997,
                 new FrameDimension(
                         51,
                         450,
@@ -40,7 +41,7 @@ public class FrameDimensions {
         );
         //2003 style frame
         dimensionMap.put(
-                FrameId.Y2003,
+                FrameId.F2003,
                 new FrameDimension(
                         41,
                         447,
@@ -58,23 +59,27 @@ public class FrameDimensions {
                 24,
                 2);
         dimensionMap.put(
-                FrameId.Y2015,
+                FrameId.F2015,
                 fd2015
         );
         //2015 style frame used as fallback dimension for unknown frames
         dimensionMap.put(
-                FrameId.DEFAULT,
+                FrameId.FDEFAULT,
                 fd2015);
     }
 
     public static FrameDimension getFrameDimension(String frameId) {
         FrameId fd;
         try {
-            fd = FrameId.valueOf("Y" + frameId);
+            fd = FrameId.valueOf("F" + frameId);
         } catch (IllegalArgumentException e) {
-            fd = FrameId.DEFAULT;
+            fd = FrameId.FDEFAULT;
         }
         return dimensionMap.get(fd);
+    }
+
+    public static List<String> getSupportedFrameIds() {
+        return dimensionMap.keySet().stream().map(Enum::name).map(s -> s.substring(1)).toList();
     }
 
     @AllArgsConstructor @Getter
@@ -93,5 +98,5 @@ public class FrameDimensions {
 }
 
 enum FrameId  {
-    Y1993, Y1997, Y2003, Y2015, DEFAULT
+    F1993, F1997, F2003, F2015, FDEFAULT
 }

@@ -6,13 +6,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpSession;
+import se.jg.magme.constans.FrameDimensions;
+import se.jg.magme.domain.MTGSet;
 import se.jg.magme.model.Card;
+import se.jg.magme.repository.CardRepository;
 
 @Service
 public class GameService {
@@ -20,17 +24,37 @@ public class GameService {
     private final GameSessionService gameSessionService;
     private final CardService cardService;
     private final ImageService imageService;
-    public GameService(GameSessionService gameSessionService, CardService cardService, ImageService imageService) {
+    private final List<MTGSet> supportedSets;
+    private final CardRepository cardRepository;
+    public GameService(GameSessionService gameSessionService, CardService cardService, ImageService imageService, CardRepository cardRepository) {
         this.gameSessionService = gameSessionService;
         this.cardService = cardService;
         this.imageService = imageService;
+        this.cardRepository = cardRepository;
+        this.supportedSets = buildSupportedSets();
     }
 
-    public void newGame(String set, List<String> colors, HttpSession session) {
+    private List<MTGSet> buildSupportedSets() {
+        Specification<Card> frameSpec = (root, query, cb) -> {
+            return root.get("frame").in(FrameDimensions.getSupportedFrameIds());
+        };
+        List<Card> res = cardRepository.findAll(frameSpec);
+        return res.stream()
+            .map(t -> new MTGSet(t.getSetCode(), t.getSetName()))
+            .distinct()
+            .toList();
+    }
+
+    public List<MTGSet> getSupportedSets() {
+        return supportedSets;
+    }
+
+    public void newGame(String set, List<String> colors, List<String> rarities, HttpSession session) {
         Collections.list(session.getAttributeNames()).forEach(session::removeAttribute);
         ArrayList<String> selectedColors = (colors == null) ? new ArrayList<>() : new ArrayList<>(colors);
+        ArrayList<String> selectedRarities = (rarities == null) ? new ArrayList<>() : new ArrayList<>(rarities);
         String selectedSet = (set == null || set.isBlank()) ? null : set;
-        gameSessionService.save(session, new GameSessionService.SearchCriteria(selectedSet, selectedColors));
+        gameSessionService.save(session, new GameSessionService.SearchCriteria(selectedSet, selectedColors, selectedRarities));
         Card card = setNextCard(session);
         session.setAttribute(GameSessionService.CURRENT_CARD_KEY, card.getId());
         session.setAttribute(GameSessionService.PREVIOUS_CARDS_KEY, new ArrayList<UUID>());
@@ -66,7 +90,8 @@ public class GameService {
         String set = gameSessionService.getSearchCriteria(session).map(GameSessionService.SearchCriteria::set).orElse(null);
         List<String> colors = gameSessionService.getSearchCriteria(session).map(GameSessionService.SearchCriteria::colors).orElse(null);
         List<String> sets = set == null ? null : List.of(set);
-        Card card = cardService.getRandomCard(sets, colors, excludeIds);
+        List<String> rarities = gameSessionService.getSearchCriteria(session).map(GameSessionService.SearchCriteria::rarities).orElse(null);
+        Card card = cardService.getRandomCard(sets, colors, rarities, excludeIds);
         session.setAttribute(GameSessionService.CURRENT_CARD_KEY, card.getId());
         return card;
     }

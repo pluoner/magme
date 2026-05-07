@@ -1,5 +1,6 @@
 package se.jg.magme.service;
 
+import org.springframework.beans.factory.BeanRegistry.Spec;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -34,9 +35,9 @@ public class CardService {
     }
 
     public Card getRandomCard(List<String> sets, List<String> colors) {
-        return getRandomCard(sets, colors, null);
+        return getRandomCard(sets, colors, null, null);
     }
-    public Card getRandomCard(List<String> sets, List<String> colors, List<UUID> excludeIds) {
+    public Card getRandomCard(List<String> sets, List<String> colors, List<String> rarities, List<UUID> excludeIds) {
         Specification<Card> setSpec = (root, query, cb) -> {
             if (sets == null) {
                 return null;
@@ -56,6 +57,12 @@ public class CardService {
             }
             return root.get("typeLine").in(types);
         };
+        Specification<Card> raritySpec = (root, query, cb) -> {
+            if (rarities == null) {
+                return null;
+            }
+            return root.get("rarity").in(rarities);
+        };
         Specification<Card> excludeSpec = (root, query, cb) -> {
             if (excludeIds == null || excludeIds.isEmpty()) {
                 return null;
@@ -63,7 +70,7 @@ public class CardService {
             return cb.not(root.get("id").in(excludeIds));
         };
         Specification<Card> manaCostSpec = (root, query, cb) -> cb.and(cb.isNotNull(root.get("manaCost")), cb.notEqual(root.get("manaCost"), ""));
-        Specification<Card> totSpec = Specification.where(setSpec).and(colorSpec).and(typeSpec).and(excludeSpec).and(manaCostSpec);
+        Specification<Card> totSpec = Specification.where(setSpec).and(colorSpec).and(typeSpec).and(excludeSpec).and(manaCostSpec).and(raritySpec);
         List<Card> res = cardRepository.findAll(totSpec);
         if (res.isEmpty()) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "No card matching criteria found");
